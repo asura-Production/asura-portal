@@ -177,7 +177,7 @@
 const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let allJobs = [];
 let clients = [];
@@ -188,9 +188,9 @@ async function init() {
   showLoading();
   try {
     const [jobsRes, clientsRes, staffRes] = await Promise.all([
-      supabase.from('jobs').select('*').order('created_at', { ascending: false }),
-      supabase.from('partners').select('id, name').eq('is_client', true),
-      supabase.from('staff_members').select('id, name')
+      sb.from('jobs').select('*').order('created_at', { ascending: false }),
+      sb.from('partners').select('id, name').eq('is_client', true),
+      sb.from('staff_members').select('id, name')
     ]);
 
     if (jobsRes.error) throw jobsRes.error;
@@ -322,9 +322,9 @@ async function saveJob() {
   try {
     let res;
     if (id) {
-      res = await supabase.from('jobs').update(data).eq('id', id);
+      res = await sb.from('jobs').update(data).eq('id', id);
     } else {
-      res = await supabase.from('jobs').insert(data);
+      res = await sb.from('jobs').insert(data);
     }
     if (res.error) throw res.error;
     showToast(id ? '更新しました' : '作成しました');
@@ -340,7 +340,7 @@ async function deleteJob() {
   if (!id) return;
   if (!confirm('このJOBを削除しますか？')) return;
   try {
-    const res = await supabase.from('jobs').delete().eq('id', id);
+    const res = await sb.from('jobs').delete().eq('id', id);
     if (res.error) throw res.error;
     showToast('削除しました');
     closeModal();
@@ -351,7 +351,7 @@ async function deleteJob() {
 }
 
 async function refreshJobs() {
-  const res = await supabase.from('jobs').select('*').order('created_at', { ascending: false });
+  const res = await sb.from('jobs').select('*').order('created_at', { ascending: false });
   if (!res.error) { allJobs = res.data || []; renderJobs(); }
 }
 
