@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>å¥éç®¡ç - asura Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg:#0a0a0a; --card:#141414; --card2:#1a1a1a; --border:#1e1e1e; --border2:#333;
+    --text:#e0e0e0; --sub:#888; --muted:#555;
+    --accent:#ff4444; --accent2:#ee3333;
+    --blue:#4488ff; --green:#44bb44; --orange:#ffa500; --purple:#aa66ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif;}
+  a{color:var(--accent);text-decoration:none;} a:hover{text-decoration:underline;}
+
+  /* Header */
+  .header{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;border-bottom:1px solid var(--border);}
+  .header-left{display:flex;align-items:center;gap:14px;}
+  .logo{color:var(--accent);font-size:28px;font-weight:900;letter-spacing:-1px;}
+  .header h1{font-size:20px;font-weight:600;}
+  .back-link{font-size:14px;}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;padding:0 32px;border-bottom:1px solid var(--border);}
+  .tab{padding:14px 24px;font-size:14px;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+
+  /* Summary */
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;padding:20px 32px;}
+  .s-card{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);}
+  .s-label{font-size:11px;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .s-val{font-size:28px;font-weight:700;}
+  .s-val.red{color:var(--accent);} .s-val.blue{color:var(--blue);} .s-val.green{color:var(--green);} .s-val.orange{color:var(--orange);} .s-val.purple{color:var(--purple);}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;padding:16px 32px;align-items:center;flex-wrap:wrap;}
+  .search{flex:1;min-width:180px;padding:9px 14px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .search:focus{border-color:var(--accent);}
+  select.filter{padding:9px 14px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .btn{padding:9px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .btn-red{background:var(--accent);color:#fff;} .btn-red:hover{background:var(--accent2);}
+  .btn-blue{background:var(--blue);color:#fff;} .btn-blue:hover{background:#3377ee;}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);} .btn-outline:hover{background:var(--card2);}
+  .btn-sm{padding:6px 12px;font-size:12px;}
+
+  /* Content */
+  .content{padding:0 32px 32px;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+
+  /* Table */
+  .tbl-wrap{overflow-x:auto;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  th{text-align:left;padding:10px 12px;color:var(--sub);font-size:11px;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border2);white-space:nowrap;}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  tr:hover td{background:var(--card);}
+  tr.clickable{cursor:pointer;}
+
+  /* Badges */
+  .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;}
+  .b-æ¯è¾¼{background:rgba(68,136,255,.12);color:var(--blue);}
+  .b-æå½¢{background:rgba(170,102,255,.12);color:var(--purple);}
+  .b-ç¾é{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-å°åæ{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-ç¸æ®º{background:rgba(136,136,136,.12);color:var(--sub);}
+  .b-ãã®ä»{background:rgba(136,136,136,.12);color:var(--sub);}
+  .b-æªæ¶è¾¼{background:rgba(255,68,68,.12);color:var(--accent);}
+  .b-ä¸é¨æ¶è¾¼{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-æ¶è¾¼æ¸{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-æªå°æ¥{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-åç«ä¾é ¼æ¸{background:rgba(68,136,255,.12);color:var(--blue);}
+  .b-æºæå¥éæ¸{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-ä¸æ¸¡ã{background:rgba(255,68,68,.12);color:var(--accent);}
+  .b-è£æ¸è­²æ¸¡{background:rgba(170,102,255,.12);color:var(--purple);}
+
+  .amount{text-align:right;font-family:'SF Mono',Menlo,monospace;font-weight:600;}
+  .amount.positive{color:var(--green);}
+
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--card2);border-radius:14px;padding:28px;width:92%;max-width:600px;max-height:90vh;overflow-y:auto;border:1px solid var(--border2);}
+  .modal h2{font-size:17px;margin-bottom:18px;}
+  .fg{margin-bottom:14px;}
+  .fg label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
+  .fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;background:#0f0f0f;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .fg textarea{height:60px;resize:vertical;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
+  .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+  .bill-fields{display:none;padding:14px;background:#111;border-radius:10px;margin-bottom:14px;border:1px solid rgba(170,102,255,.2);}
+  .bill-fields.show{display:block;}
+  .bill-fields h4{font-size:13px;color:var(--purple);margin-bottom:12px;}
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions .btn{flex:1;padding:11px;}
+
+  /* CSV Upload Area */
+  .csv-area{border:2px dashed var(--border2);border-radius:14px;padding:40px;text-align:center;margin-bottom:20px;transition:all .2s;cursor:pointer;}
+  .csv-area:hover,.csv-area.drag{border-color:var(--accent);background:rgba(255,68,68,.03);}
+  .csv-area p{color:var(--sub);font-size:14px;margin-bottom:8px;}
+  .csv-area .hint{font-size:12px;color:var(--muted);}
+  .csv-preview{background:var(--card);border-radius:10px;padding:16px;margin-top:16px;max-height:300px;overflow:auto;}
+  .csv-preview table{font-size:12px;}
+  .csv-status{padding:12px 16px;border-radius:10px;margin-top:12px;font-size:13px;}
+  .csv-ok{background:rgba(68,187,68,.1);color:var(--green);border:1px solid rgba(68,187,68,.3);}
+  .csv-err{background:rgba(255,68,68,.1);color:var(--accent);border:1px solid rgba(255,68,68,.3);}
+
+  /* Toast */
+  .toast{position:fixed;bottom:20px;right:20px;padding:12px 22px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;}
+  .toast.show{opacity:1;}
+  .toast-ok{background:#1a3a1a;color:var(--green);border:1px solid var(--green);}
+  .toast-ng{background:#3a1a1a;color:var(--accent);border:1px solid var(--accent);}
+
+  .empty{text-align:center;padding:48px;color:var(--sub);font-size:14px;}
+  .loading{text-align:center;padding:48px;color:var(--sub);}
+
+  /* Mobile */
+  @media(max-width:800px){
+    .header{padding:14px 16px;}
+    .logo{font-size:22px;} .header h1{font-size:16px;}
+    .toolbar{padding:10px 16px;gap:8px;} .content{padding:0 16px 24px;} .summary{padding:12px 16px;gap:10px;}
+    .summary{grid-template-columns:1fr 1fr;}
+    .s-card{padding:14px;} .s-val{font-size:22px;}
+    .fr,.fr3{grid-template-columns:1fr;}
+    .tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;} .tab{padding:12px 16px;font-size:13px;white-space:nowrap;}
+    .search{min-width:100%;} .filter{min-width:0;flex:1;}
+    .btn{padding:10px 16px;width:100%;}
+    table{font-size:12px;} th,td{padding:8px 6px;}
+    .modal{padding:20px;width:96%;max-width:none;border-radius:12px;}
+    .csv-area{padding:24px 16px;} .csv-area p{font-size:13px;}
+  }
+  @media(max-width:480px){
+    .summary{grid-template-columns:1fr;}
+    .toolbar{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo">asura</span>
+    <h1>å¥éç®¡ç</h1>
+  </div>
+  <a href="index.html" class="back-link">â ãã¼ã¿ã«ã«æ»ã</a>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="list">å¥éä¸è¦§</div>
+  <div class="tab" data-tab="bills">æå½¢å°å¸³</div>
+  <div class="tab" data-tab="csv">CSVåãè¾¼ã¿</div>
+</div>
+
+<!-- Summary -->
+<div class="summary">
+  <div class="s-card"><div class="s-label">ä»æå¥éåè¨</div><div class="s-val green" id="smTotal">-</div></div>
+  <div class="s-card"><div class="s-label">æªæ¶è¾¼</div><div class="s-val red" id="smUnmatched">-</div></div>
+  <div class="s-card"><div class="s-label">æå½¢ æªå°æ¥</div><div class="s-val purple" id="smBills">-</div></div>
+  <div class="s-card"><div class="s-label">ä»æä»¶æ°</div><div class="s-val blue" id="smCount">-</div></div>
+</div>
+
+<!-- ========== TAB: å¥éä¸è¦§ ========== -->
+<div class="tab-content active" id="panel-list">
+  <div class="toolbar">
+    <input type="text" class="search" id="searchPay" placeholder="æ¯è¾¼äººåã»ã¯ã©ã¤ã¢ã³ãåã§æ¤ç´¢...">
+    <select class="filter" id="filterType">
+      <option value="">å¨ç¨®å¥</option>
+      <option value="æ¯è¾¼">æ¯è¾¼</option>
+      <option value="æå½¢">æå½¢</option>
+      <option value="ç¾é">ç¾é</option>
+      <option value="å°åæ">å°åæ</option>
+      <option value="ç¸æ®º">ç¸æ®º</option>
+    </select>
+    <select class="filter" id="filterMatch">
+      <option value="">å¨ã¹ãã¼ã¿ã¹</option>
+      <option value="æªæ¶è¾¼">æªæ¶è¾¼</option>
+      <option value="ä¸é¨æ¶è¾¼">ä¸é¨æ¶è¾¼</option>
+      <option value="æ¶è¾¼æ¸">æ¶è¾¼æ¸</option>
+    </select>
+    <button class="btn btn-red" onclick="openPaymentModal()">+ å¥éç»é²</button>
+  </div>
+  <div class="content">
+    <div class="tbl-wrap" id="payTable"></div>
+  </div>
+</div>
+
+<!-- ========== TAB: æå½¢å°å¸³ ========== -->
+<div class="tab-content" id="panel-bills">
+  <div class="toolbar">
+    <select class="filter" id="filterBillStatus">
+      <option value="">å¨ã¹ãã¼ã¿ã¹</option>
+      <option value="æªå°æ¥">æªå°æ¥</option>
+      <option value="åç«ä¾é ¼æ¸">åç«ä¾é ¼æ¸</option>
+      <option value="æºæå¥éæ¸">æºæå¥éæ¸</option>
+      <option value="ä¸æ¸¡ã">ä¸æ¸¡ã</option>
+      <option value="è£æ¸è­²æ¸¡">è£æ¸è­²æ¸¡</option>
+    </select>
+  </div>
+  <div class="content">
+    <div class="tbl-wrap" id="billTable"></div>
+  </div>
+</div>
+
+<!-- ========== TAB: CSVåãè¾¼ã¿ ========== -->
+<div class="tab-content" id="panel-csv">
+  <div class="content" style="padding-top:20px;">
+    <div class="csv-area" id="csvArea" onclick="document.getElementById('csvFile').click()">
+      <p>BizSTATION CSVãã¡ã¤ã«ããã©ãã°&ãã­ãã</p>
+      <p class="hint">ã¾ãã¯ã¯ãªãã¯ãã¦ãã¡ã¤ã«ãé¸æï¼.csvï¼</p>
+      <input type="file" id="csvFile" accept=".csv" style="display:none">
+    </div>
+    <div id="csvResult"></div>
+    <div id="csvPreview"></div>
+    <div style="display:none;margin-top:16px;" id="csvActions">
+      <button class="btn btn-red" onclick="importCsv()">ãã®åå®¹ã§åãè¾¼ã</button>
+      <button class="btn btn-outline" onclick="cancelCsv()" style="margin-left:8px;">ã­ã£ã³ã»ã«</button>
+    </div>
+    <h3 style="margin-top:32px;font-size:14px;color:var(--sub);">åãè¾¼ã¿å±¥æ­´</h3>
+    <div id="csvHistory" style="margin-top:12px;"></div>
+  </div>
+</div>
+
+<!-- ========== å¥éç»é²/ç·¨éã¢ã¼ãã« ========== -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal">
+    <h2 id="payModalTitle">å¥éç»é²</h2>
+    <input type="hidden" id="pId">
+    <div class="fr">
+      <div class="fg"><label>å¥éæ¥ *</label><input type="date" id="pDate"></div>
+      <div class="fg"><label>éé¡ï¼ç¨è¾¼ï¼*</label><input type="number" id="pAmount" placeholder="550000"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>å¥éç¨®å¥</label>
+        <select id="pType">
+          <option value="æ¯è¾¼">æ¯è¾¼</option>
+          <option value="æå½¢">æå½¢</option>
+          <option value="ç¾é">ç¾é</option>
+          <option value="å°åæ">å°åæ</option>
+          <option value="ç¸æ®º">ç¸æ®º</option>
+          <option value="ãã®ä»">ãã®ä»</option>
+        </select>
+      </div>
+      <div class="fg"><label>æ¯è¾¼äººå</label><input type="text" id="pPayer" placeholder="ã«ï¼ãµã³ãã«ã¯ã©ã¤ã¢ã³ã"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label>ã¯ã©ã¤ã¢ã³ã</label><select id="pClient"><option value="">-- é¸æ --</option></select></div>
+      <div class="fg"><label>å¥éå£åº§</label><select id="pBank"><option value="">-- é¸æ --</option></select></div>
+    </div>
+
+    <!-- æå½¢ãã£ã¼ã«ã -->
+    <div class="bill-fields" id="billFields">
+      <h4>æå½¢æå ±</h4>
+      <div class="fr">
+        <div class="fg"><label>æå½¢çªå·</label><input type="text" id="pBillNo" placeholder="T-2026-0315-001"></div>
+        <div class="fg"><label>æ¯åºäºº</label><input type="text" id="pBillIssuer" placeholder="æ ªå¼ä¼ç¤¾åå ±å "></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><label>æå½¢æ¯æéè¡</label><input type="text" id="pBillBank" placeholder="ã¿ãã»éè¡ æ°æ©æ¯åº"></div>
+        <div class="fg"><label>æºææ¥ *</label><input type="date" id="pMaturity"></div>
+      </div>
+      <div class="fg"><label>æå½¢ã¹ãã¼ã¿ã¹</label>
+        <select id="pBillStatus">
+          <option value="æªå°æ¥">æªå°æ¥</option>
+          <option value="åç«ä¾é ¼æ¸">åç«ä¾é ¼æ¸</option>
+          <option value="æºæå¥éæ¸">æºæå¥éæ¸</option>
+          <option value="ä¸æ¸¡ã">ä¸æ¸¡ã</option>
+          <option value="è£æ¸è­²æ¸¡">è£æ¸è­²æ¸¡</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="fg"><label>ã¡ã¢</label><textarea id="pMemo" placeholder="åè"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="savePayment()">ä¿å­</button>
+      <button class="btn btn-outline" onclick="closePayModal()">ã­ã£ã³ã»ã«</button>
+      <button class="btn btn-outline" id="pBtnDel" style="display:none;color:var(--accent);border-color:var(--accent);" onclick="deletePayment()">åé¤</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let payments = [], clients = [], banks = [], csvParsed = [];
+
+// ========== INIT ==========
+async function init() {
+  document.getElementById('payTable').innerHTML = '<div class="loading">èª­ã¿è¾¼ã¿ä¸­...</div>';
+  try {
+    const [payRes, cliRes, bankRes] = await Promise.all([
+      sb.from('payments_received').select('*, partners:client_id(name), bank_accounts:bank_account_id(bank_name,branch_name)').order('payment_date', { ascending: false }),
+      sb.from('partners').select('id, name').eq('is_client', true),
+      sb.from('bank_accounts').select('id, bank_name, branch_name').eq('is_active', true)
+    ]);
+    if (payRes.error) throw payRes.error;
+    payments = payRes.data || [];
+    clients = cliRes.data || [];
+    banks = bankRes.data || [];
+    fillDropdowns();
+    renderPayments();
+    renderBills();
+    renderSummary();
+    loadCsvHistory();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('payTable').innerHTML = '<div class="empty" style="color:var(--accent)">èª­ã¿è¾¼ã¿ã¨ã©ã¼: ' + (e.message||e) + '</div>';
+  }
+}
+
+// ========== SUMMARY ==========
+function renderSummary() {
+  const now = new Date();
+  const thisMonth = payments.filter(p => {
+    const d = new Date(p.payment_date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+  const totalAmt = thisMonth.reduce((s,p) => s + Number(p.amount||0), 0);
+  const unmatched = payments.filter(p => p.match_status === 'æªæ¶è¾¼').length;
+  const billsPending = payments.filter(p => p.payment_type === 'æå½¢' && p.bill_status === 'æªå°æ¥').length;
+
+  document.getElementById('smTotal').textContent = 'Â¥' + totalAmt.toLocaleString();
+  document.getElementById('smUnmatched').textContent = unmatched + 'ä»¶';
+  document.getElementById('smBills').textContent = billsPending + 'ä»¶';
+  document.getElementById('smCount').textContent = thisMonth.length + 'ä»¶';
+}
+
+// ========== PAYMENTS LIST ==========
+function renderPayments() {
+  const q = document.getElementById('searchPay').value.toLowerCase();
+  const ft = document.getElementById('filterType').value;
+  const fm = document.getElementById('filterMatch').value;
+
+  let list = payments.filter(p => {
+    const nameMatch = !q || (p.payer_name||'').toLowerCase().includes(q) || (p.partners?.name||'').toLowerCase().includes(q);
+    const typeMatch = !ft || p.payment_type === ft;
+    const matchMatch = !fm || p.match_status === fm;
+    return nameMatch && typeMatch && matchMatch;
+  });
+
+  if (!list.length) { document.getElementById('payTable').innerHTML = '<div class="empty">å¥éãã¼ã¿ãããã¾ãã</div>'; return; }
+
+  let html = '<table><thead><tr><th>å¥éæ¥</th><th>ç¨®å¥</th><th>æ¯è¾¼äººå</th><th>ã¯ã©ã¤ã¢ã³ã</th><th>å£åº§</th><th style="text-align:right">éé¡</th><th>æ¶è¾¼</th><th>ã¡ã¢</th></tr></thead><tbody>';
+  list.forEach(p => {
+    const clientName = p.partners?.name || '-';
+    const bankName = p.bank_accounts ? (p.bank_accounts.bank_name + ' ' + (p.bank_accounts.branch_name||'')) : '-';
+    html += '<tr class="clickable" onclick="openEditPayment(\'' + p.id + '\')">'
+      + '<td>' + esc(p.payment_date) + '</td>'
+      + '<td><span class="badge b-' + p.payment_type + '">' + esc(p.payment_type) + '</span></td>'
+      + '<td>' + esc(p.payer_name||'-') + '</td>'
+      + '<td>' + esc(clientName) + '</td>'
+      + '<td style="font-size:12px;color:var(--sub)">' + esc(bankName) + '</td>'
+      + '<td class="amount positive">Â¥' + Number(p.amount).toLocaleString() + '</td>'
+      + '<td><span class="badge b-' + p.match_status + '">' + esc(p.match_status) + '</span></td>'
+      + '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;color:var(--sub);font-size:12px">' + esc(p.memo||'') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('payTable').innerHTML = html;
+}
+
+// ========== BILLS LEDGER ==========
+function renderBills() {
+  const fs = document.getElementById('filterBillStatus').value;
+  let bills = payments.filter(p => p.payment_type === 'æå½¢');
+  if (fs) bills = bills.filter(b => b.bill_status === fs);
+  bills.sort((a,b) => (a.maturity_date||'').localeCompare(b.maturity_date||''));
+
+  if (!bills.length) { document.getElementById('billTable').innerHTML = '<div class="empty">æå½¢ãã¼ã¿ãããã¾ãã</div>'; return; }
+
+  const today = new Date().toISOString().slice(0,10);
+  let html = '<table><thead><tr><th>æå½¢çªå·</th><th>æ¯åºäºº</th><th>æ¯æéè¡</th><th style="text-align:right">éé¡</th><th>ååæ¥</th><th>æºææ¥</th><th>æ®æ¥æ°</th><th>ã¹ãã¼ã¿ã¹</th></tr></thead><tbody>';
+  bills.forEach(b => {
+    const days = b.maturity_date ? Math.ceil((new Date(b.maturity_date) - new Date()) / 86400000) : '-';
+    const daysColor = typeof days === 'number' ? (days < 0 ? 'var(--accent)' : days < 14 ? 'var(--orange)' : 'var(--green)') : 'var(--sub)';
+    html += '<tr class="clickable" onclick="openEditPayment(\'' + b.id + '\')">'
+      + '<td style="font-family:monospace;color:var(--purple)">' + esc(b.bill_number||'-') + '</td>'
+      + '<td>' + esc(b.bill_issuer||'-') + '</td>'
+      + '<td style="font-size:12px;color:var(--sub)">' + esc(b.bill_bank||'-') + '</td>'
+      + '<td class="amount positive">Â¥' + Number(b.amount).toLocaleString() + '</td>'
+      + '<td>' + esc(b.payment_date) + '</td>'
+      + '<td>' + esc(b.maturity_date||'-') + '</td>'
+      + '<td style="font-weight:700;color:' + daysColor + '">' + days + 'æ¥</td>'
+      + '<td><span class="badge b-' + b.bill_status + '">' + esc(b.bill_status) + '</span></td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('billTable').innerHTML = html;
+}
+
+// ========== DROPDOWNS ==========
+function fillDropdowns() {
+  const cs = document.getElementById('pClient');
+  cs.innerHTML = '<option value="">-- é¸æ --</option>' + clients.map(c => '<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
+  const bs = document.getElementById('pBank');
+  bs.innerHTML = '<option value="">-- é¸æ --</option>' + banks.map(b => '<option value="'+b.id+'">'+esc(b.bank_name+' '+( b.branch_name||''))+'</option>').join('');
+}
+
+// ========== MODAL ==========
+function openPaymentModal() {
+  document.getElementById('payModalTitle').textContent = 'å¥éç»é²';
+  document.getElementById('pId').value = '';
+  document.getElementById('pDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('pAmount').value = '';
+  document.getElementById('pType').value = 'æ¯è¾¼';
+  document.getElementById('pPayer').value = '';
+  document.getElementById('pClient').value = '';
+  document.getElementById('pBank').value = banks.find(b => true)?.id || '';
+  document.getElementById('pBillNo').value = '';
+  document.getElementById('pBillIssuer').value = '';
+  document.getElementById('pBillBank').value = '';
+  document.getElementById('pMaturity').value = '';
+  document.getElementById('pBillStatus').value = 'æªå°æ¥';
+  document.getElementById('pMemo').value = '';
+  document.getElementById('pBtnDel').style.display = 'none';
+  toggleBillFields();
+  document.getElementById('payModal').classList.add('active');
+}
+
+function openEditPayment(id) {
+  const p = payments.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('payModalTitle').textContent = 'å¥éç·¨é';
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pDate').value = p.payment_date || '';
+  document.getElementById('pAmount').value = p.amount || '';
+  document.getElementById('pType').value = p.payment_type || 'æ¯è¾¼';
+  document.getElementById('pPayer').value = p.payer_name || '';
+  document.getElementById('pClient').value = p.client_id || '';
+  document.getElementById('pBank').value = p.bank_account_id || '';
+  document.getElementById('pBillNo').value = p.bill_number || '';
+  document.getElementById('pBillIssuer').value = p.bill_issuer || '';
+  document.getElementById('pBillBank').value = p.bill_bank || '';
+  document.getElementById('pMaturity').value = p.maturity_date || '';
+  document.getElementById('pBillStatus').value = p.bill_status || 'æªå°æ¥';
+  document.getElementById('pMemo').value = p.memo || '';
+  document.getElementById('pBtnDel').style.display = 'block';
+  toggleBillFields();
+  document.getElementById('payModal').classList.add('active');
+}
+
+function closePayModal() { document.getElementById('payModal').classList.remove('active'); }
+
+function toggleBillFields() {
+  const show = document.getElementById('pType').value === 'æå½¢';
+  document.getElementById('billFields').classList.toggle('show', show);
+}
+document.getElementById('pType').addEventListener('change', toggleBillFields);
+
+// ========== CRUD ==========
+async function savePayment() {
+  const id = document.getElementById('pId').value;
+  const date = document.getElementById('pDate').value;
+  const amount = document.getElementById('pAmount').value;
+  if (!date || !amount) { toast('å¥éæ¥ã¨éé¡ã¯å¿é ã§ã', true); return; }
+
+  const data = {
+    payment_date: date,
+    amount: Number(amount),
+    payment_type: document.getElementById('pType').value,
+    payer_name: document.getElementById('pPayer').value || null,
+    client_id: document.getElementById('pClient').value || null,
+    bank_account_id: document.getElementById('pBank').value || null,
+    memo: document.getElementById('pMemo').value || null,
+    source: 'manual'
+  };
+  if (data.payment_type === 'æå½¢') {
+    data.bill_number = document.getElementById('pBillNo').value || null;
+    data.bill_issuer = document.getElementById('pBillIssuer').value || null;
+    data.bill_bank = document.getElementById('pBillBank').value || null;
+    data.maturity_date = document.getElementById('pMaturity').value || null;
+    data.bill_status = document.getElementById('pBillStatus').value || 'æªå°æ¥';
+  }
+
+  try {
+    const res = id
+      ? await sb.from('payments_received').update(data).eq('id', id)
+      : await sb.from('payments_received').insert(data);
+    if (res.error) throw res.error;
+    toast(id ? 'æ´æ°ãã¾ãã' : 'ç»é²ãã¾ãã');
+    closePayModal();
+    await reload();
+  } catch(e) { toast('ã¨ã©ã¼: '+(e.message||e), true); }
+}
+
+async function deletePayment() {
+  const id = document.getElementById('pId').value;
+  if (!id || !confirm('ãã®å¥éãã¼ã¿ãåé¤ãã¾ããï¼')) return;
+  try {
+    const res = await sb.from('payments_received').delete().eq('id', id);
+    if (res.error) throw res.error;
+    toast('åé¤ãã¾ãã');
+    closePayModal();
+    await reload();
+  } catch(e) { toast('åé¤ã¨ã©ã¼: '+(e.message||e), true); }
+}
+
+async function reload() {
+  const res = await sb.from('payments_received').select('*, partners:client_id(name), bank_accounts:bank_account_id(bank_name,branch_name)').order('payment_date', { ascending: false });
+  if (!res.error) { payments = res.data || []; renderPayments(); renderBills(); renderSummary(); }
+}
+
+// ========== CSV IMPORT ==========
+let csvRows = [];
+
+document.getElementById('csvFile').addEventListener('change', function(e) {
+  if (e.target.files[0]) parseCsvFile(e.target.files[0]);
+});
+const csvArea = document.getElementById('csvArea');
+csvArea.addEventListener('dragover', e => { e.preventDefault(); csvArea.classList.add('drag'); });
+csvArea.addEventListener('dragleave', () => csvArea.classList.remove('drag'));
+csvArea.addEventListener('drop', e => { e.preventDefault(); csvArea.classList.remove('drag'); if (e.dataTransfer.files[0]) parseCsvFile(e.dataTransfer.files[0]); });
+
+function parseCsvFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const text = e.target.result;
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+      if (lines.length < 2) throw new Error('ãã¼ã¿ãä¸è¶³ãã¦ãã¾ã');
+
+      // BizSTATION CSV: æ¥ä»,æè¦,ãæ¯æéé¡,ãé ãéé¡,æ®é«,ã¡ã¢  (typical format)
+      // Auto-detect: find the header row and amount columns
+      const header = lines[0].split(',');
+      csvRows = [];
+      for (let i = 1; i < lines.length; i++) {
+        const cols = lines[i].split(',');
+        if (cols.length < 4) continue;
+        // Try to find date and credit amount
+        const dateStr = cols[0].replace(/"/g,'').trim();
+        const payer = cols[1].replace(/"/g,'').trim();
+        const credit = Number((cols[3]||cols[2]).replace(/"/g,'').replace(/,/g,'').trim());
+        if (!dateStr || isNaN(credit) || credit <= 0) continue;
+
+        // Parse date (YYYY/MM/DD or YYYY-MM-DD)
+        const dateNorm = dateStr.replace(/\//g, '-');
+
+        csvRows.push({ date: dateNorm, payer: payer, amount: credit, memo: cols.length > 5 ? cols[5].replace(/"/g,'').trim() : '' });
+      }
+
+      if (!csvRows.length) throw new Error('æå¹ãªå¥éãã¼ã¿ãè¦ã¤ããã¾ãã');
+
+      // Show preview
+      let prev = '<div class="csv-preview"><table><thead><tr><th>æ¥ä»</th><th>æ¯è¾¼äºº</th><th style="text-align:right">éé¡</th><th>ã¡ã¢</th></tr></thead><tbody>';
+      csvRows.forEach(r => {
+        prev += '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.payer)+'</td><td class="amount positive">Â¥'+r.amount.toLocaleString()+'</td><td style="color:var(--sub);font-size:12px">'+esc(r.memo)+'</td></tr>';
+      });
+      prev += '</tbody></table></div>';
+      const totalAmt = csvRows.reduce((s,r)=>s+r.amount,0);
+      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-ok">' + csvRows.length + 'ä»¶ã®å¥éãã¼ã¿ãæ¤åºï¼åè¨ Â¥' + totalAmt.toLocaleString() + 'ï¼</div>';
+      document.getElementById('csvPreview').innerHTML = prev;
+      document.getElementById('csvActions').style.display = 'block';
+    } catch(err) {
+      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-err">ãã¼ã¹ã¨ã©ã¼: ' + err.message + '</div>';
+      document.getElementById('csvPreview').innerHTML = '';
+      document.getElementById('csvActions').style.display = 'none';
+    }
+  };
+  reader.readAsText(file, 'Shift_JIS'); // BizSTATION exports Shift_JIS
+}
+
+async function importCsv() {
+  if (!csvRows.length) return;
+  try {
+    // Create import batch
+    const batchRes = await sb.from('csv_imports').insert({
+      file_name: document.getElementById('csvFile').files[0]?.name || 'upload.csv',
+      source_type: 'bizstation',
+      record_count: csvRows.length,
+      total_amount: csvRows.reduce((s,r)=>s+r.amount, 0),
+      status: 'å®äº'
+    }).select('id').single();
+    if (batchRes.error) throw batchRes.error;
+
+    const batchId = batchRes.data.id;
+    const defaultBank = banks.find(b => true)?.id || null;
+
+    // Insert all payment records
+    const records = csvRows.map((r, i) => ({
+      payment_date: r.date,
+      amount: r.amount,
+      payer_name: r.payer,
+      payment_type: 'æ¯è¾¼',
+      bank_account_id: defaultBank,
+      source: 'csv_import',
+      csv_import_id: batchId,
+      csv_row_number: i + 1,
+      memo: r.memo || null
+    }));
+
+    const insRes = await sb.from('payments_received').insert(records);
+    if (insRes.error) throw insRes.error;
+
+    toast(csvRows.length + 'ä»¶ãåãè¾¼ã¿ã¾ãã');
+    csvRows = [];
+    document.getElementById('csvResult').innerHTML = '';
+    document.getElementById('csvPreview').innerHTML = '';
+    document.getElementById('csvActions').style.display = 'none';
+    document.getElementById('csvFile').value = '';
+    await reload();
+    loadCsvHistory();
+  } catch(e) { toast('åãè¾¼ã¿ã¨ã©ã¼: '+(e.message||e), true); }
+}
+
+function cancelCsv() {
+  csvRows = [];
+  document.getElementById('csvResult').innerHTML = '';
+  document.getElementById('csvPreview').innerHTML = '';
+  document.getElementById('csvActions').style.display = 'none';
+  document.getElementById('csvFile').value = '';
+}
+
+async function loadCsvHistory() {
+  const res = await sb.from('csv_imports').select('*').order('created_at', { ascending: false }).limit(10);
+  if (res.error || !res.data?.length) { document.getElementById('csvHistory').innerHTML = '<div class="empty">åãè¾¼ã¿å±¥æ­´ãªã</div>'; return; }
+  let html = '<table><thead><tr><th>åãè¾¼ã¿æ¥</th><th>ãã¡ã¤ã«</th><th>ç¨®å¥</th><th>ä»¶æ°</th><th style="text-align:right">åè¨éé¡</th><th>ç¶æ</th></tr></thead><tbody>';
+  res.data.forEach(h => {
+    html += '<tr><td>'+esc(h.created_at?.slice(0,10)||'')+'</td><td>'+esc(h.file_name)+'</td><td>'+esc(h.source_type)+'</td><td>'+h.record_count+'ä»¶</td><td class="amount">Â¥'+(Number(h.total_amount)||0).toLocaleString()+'</td><td>'+esc(h.status)+'</td></tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('csvHistory').innerHTML = html;
+}
+
+// ========== TABS ==========
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== FILTERS ==========
+document.getElementById('searchPay').addEventListener('input', renderPayments);
+document.getElementById('filterType').addEventListener('change', renderPayments);
+document.getElementById('filterMatch').addEventListener('change', renderPayments);
+document.getElementById('filterBillStatus').addEventListener('change', renderBills);
+document.getElementById('payModal').addEventListener('click', function(e) { if (e.target === this) closePayModal(); });
+
+// ========== UTIL ==========
+function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + (err?'toast-ng':'toast-ok');
+  setTimeout(()=>{ t.className='toast'; }, 3000);
+}
+
+// ========== START ==========
+init();
+</script>
+</body>
+</html>
