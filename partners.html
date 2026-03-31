@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>取引先マスター - asura Portal</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --bg:#0a0a0a; --card:#141414; --card2:#1a1a1a; --border:#1e1e1e; --border2:#333;
+    --text:#e0e0e0; --sub:#888; --muted:#555;
+    --accent:#ff4444; --accent2:#ee3333;
+    --blue:#4488ff; --green:#44bb44; --orange:#ffa500; --purple:#aa66ff;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif;}
+  a{color:var(--accent);text-decoration:none;} a:hover{text-decoration:underline;}
+
+  .header{display:flex;justify-content:space-between;align-items:center;padding:20px 32px;border-bottom:1px solid var(--border);}
+  .header-left{display:flex;align-items:center;gap:14px;}
+  .logo{color:var(--accent);font-size:28px;font-weight:900;letter-spacing:-1px;}
+  .header h1{font-size:20px;font-weight:600;}
+  .back-link{font-size:14px;}
+
+  /* Tabs */
+  .tabs{display:flex;gap:0;padding:0 32px;border-bottom:1px solid var(--border);}
+  .tab{padding:14px 24px;font-size:14px;color:var(--sub);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;}
+  .tab:hover{color:var(--text);}
+  .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600;}
+
+  /* Summary */
+  .summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;padding:20px 32px;}
+  .s-card{background:var(--card);border-radius:12px;padding:18px;border:1px solid var(--border);}
+  .s-label{font-size:11px;color:var(--sub);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;}
+  .s-val{font-size:26px;font-weight:700;}
+  .s-val.red{color:var(--accent);} .s-val.blue{color:var(--blue);} .s-val.green{color:var(--green);} .s-val.orange{color:var(--orange);}
+
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;padding:16px 32px;align-items:center;flex-wrap:wrap;}
+  .search{flex:1;min-width:180px;padding:9px 14px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .search:focus{border-color:var(--accent);}
+  select.filter{padding:9px 14px;background:var(--card);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .btn{padding:9px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:background .2s;}
+  .btn-red{background:var(--accent);color:#fff;} .btn-red:hover{background:var(--accent2);}
+  .btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2);} .btn-outline:hover{background:var(--card2);}
+
+  /* Content */
+  .content{padding:0 32px 32px;}
+  .tab-content{display:none;} .tab-content.active{display:block;}
+  table{width:100%;border-collapse:collapse;font-size:13px;}
+  thead{background:var(--card);} th{padding:10px 12px;text-align:left;color:var(--sub);font-weight:500;font-size:12px;white-space:nowrap;}
+  td{padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap;}
+  .clickable{cursor:pointer;transition:background .15s;} .clickable:hover{background:var(--card);}
+  .empty{text-align:center;padding:50px 20px;color:var(--sub);font-size:14px;}
+  .loading{text-align:center;padding:50px 20px;color:var(--sub);}
+
+  .badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600;}
+  .b-client{background:rgba(68,136,255,.15);color:var(--blue);}
+  .b-vendor{background:rgba(170,102,255,.15);color:var(--purple);}
+  .b-both{background:rgba(68,187,68,.15);color:var(--green);}
+  .b-yes{background:rgba(255,165,0,.15);color:var(--orange);}
+  .b-no{background:rgba(136,136,136,.1);color:var(--muted);}
+
+  /* Modal */
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;}
+  .modal-overlay.active{display:flex;}
+  .modal{background:var(--card2);border-radius:14px;padding:28px;width:92%;max-width:680px;max-height:90vh;overflow-y:auto;border:1px solid var(--border2);}
+  .modal h2{font-size:17px;margin-bottom:18px;}
+  .fg{margin-bottom:14px;}
+  .fg label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
+  .fg input,.fg select,.fg textarea{width:100%;padding:9px 12px;background:#0f0f0f;border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;}
+  .fg textarea{height:60px;resize:vertical;}
+  .fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--accent);}
+  .fr{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;}
+
+  .section-title{font-size:13px;color:var(--accent);font-weight:600;margin:20px 0 12px;padding-top:16px;border-top:1px solid var(--border);}
+  .toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:14px;}
+  .toggle-row label{font-size:12px;color:var(--sub);margin:0;}
+  .toggle{position:relative;width:44px;height:24px;flex-shrink:0;}
+  .toggle input{opacity:0;width:0;height:0;}
+  .toggle .slider{position:absolute;inset:0;background:var(--border2);border-radius:12px;cursor:pointer;transition:background .3s;}
+  .toggle .slider:before{content:'';position:absolute;width:18px;height:18px;border-radius:50%;background:#fff;top:3px;left:3px;transition:transform .3s;}
+  .toggle input:checked + .slider{background:var(--accent);}
+  .toggle input:checked + .slider:before{transform:translateX(20px);}
+
+  .payment-preview{background:#111;border-radius:10px;padding:14px;margin-top:8px;font-size:13px;color:var(--sub);border:1px solid rgba(68,136,255,.2);}
+  .payment-preview strong{color:var(--blue);}
+
+  .modal-actions{display:flex;gap:10px;margin-top:20px;}
+  .modal-actions .btn{flex:1;padding:11px;}
+
+  .toast{position:fixed;bottom:20px;right:20px;padding:14px 24px;border-radius:10px;font-size:13px;z-index:200;opacity:0;transition:opacity .3s;}
+  .toast.show{opacity:1;}
+  .toast-ok{background:#1a3a1a;color:var(--green);border:1px solid var(--green);}
+  .toast-ng{background:#3a1a1a;color:var(--accent);border:1px solid var(--accent);}
+
+  @media(max-width:768px){
+    .header{padding:14px 16px;} .toolbar{padding:12px 16px;} .content{padding:0 16px 24px;} .summary{padding:12px 16px;}
+    .fr,.fr3{grid-template-columns:1fr;}
+    .modal{padding:20px;width:96%;max-width:none;border-radius:12px;}
+    table{font-size:12px;} th,td{padding:8px 6px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <span class="logo">asura</span>
+    <h1>取引先マスター</h1>
+  </div>
+  <a href="index.html" class="back-link">← ポータルに戻る</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="clients">クライアント</div>
+  <div class="tab" data-tab="vendors">外注先</div>
+  <div class="tab" data-tab="all">全取引先</div>
+</div>
+
+<div class="summary">
+  <div class="s-card"><div class="s-label">クライアント数</div><div class="s-val blue" id="smClients">-</div></div>
+  <div class="s-card"><div class="s-label">外注先数</div><div class="s-val purple" id="smVendors">-</div></div>
+  <div class="s-card"><div class="s-label">源泉徴収対象</div><div class="s-val orange" id="smWithholding">-</div></div>
+  <div class="s-card"><div class="s-label">全取引先</div><div class="s-val green" id="smTotal">-</div></div>
+</div>
+
+<div class="toolbar">
+  <input type="text" class="search" id="searchInput" placeholder="取引先名・カナで検索...">
+  <button class="btn btn-red" onclick="openNewModal()">+ 取引先登録</button>
+</div>
+
+<div class="content">
+  <div class="tab-content active" id="panel-clients"><div id="clientTable"><div class="loading">読み込み中...</div></div></div>
+  <div class="tab-content" id="panel-vendors"><div id="vendorTable"></div></div>
+  <div class="tab-content" id="panel-all"><div id="allTable"></div></div>
+</div>
+
+<!-- ========== 登録/編集モーダル ========== -->
+<div class="modal-overlay" id="partnerModal">
+  <div class="modal">
+    <h2 id="modalTitle">取引先登録</h2>
+    <input type="hidden" id="pId">
+
+    <!-- 基本情報 -->
+    <div class="fr">
+      <div class="fg"><label>取引先名 *</label><input type="text" id="pName" placeholder="株式会社サンプル"></div>
+      <div class="fg"><label>取引先名（カナ）</label><input type="text" id="pKana" placeholder="カブシキガイシャサンプル"></div>
+    </div>
+    <div class="fr">
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="pIsClient" checked><span class="slider"></span></label>
+        <label>クライアント</label>
+      </div>
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="pIsVendor"><span class="slider"></span></label>
+        <label>外注先</label>
+      </div>
+    </div>
+
+    <!-- 連絡先 -->
+    <div class="section-title">連絡先</div>
+    <div class="fr">
+      <div class="fg"><label>郵便番号</label><input type="text" id="pPostal" placeholder="100-0001"></div>
+      <div class="fg"><label>電話番号</label><input type="text" id="pTel" placeholder="03-1234-5678"></div>
+    </div>
+    <div class="fg"><label>住所</label><input type="text" id="pAddress" placeholder="東京都千代田区..."></div>
+    <div class="fg"><label>メール</label><input type="email" id="pEmail" placeholder="info@sample.co.jp"></div>
+
+    <!-- 支払サイト -->
+    <div class="section-title">支払サイト</div>
+    <div class="fr3">
+      <div class="fg">
+        <label>締め日</label>
+        <select id="pClosing">
+          <option value="">-- 選択 --</option>
+          <option value="5">5日</option>
+          <option value="10">10日</option>
+          <option value="15">15日</option>
+          <option value="20">20日</option>
+          <option value="25">25日</option>
+          <option value="末">末日</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>支払月</label>
+        <select id="pMonthsLater">
+          <option value="">-- 選択 --</option>
+          <option value="0">当月</option>
+          <option value="1">翌月</option>
+          <option value="2">翌々月</option>
+          <option value="3">3ヶ月後</option>
+        </select>
+      </div>
+      <div class="fg">
+        <label>支払日</label>
+        <select id="pPayDay">
+          <option value="">-- 選択 --</option>
+          <option value="5">5日</option>
+          <option value="10">10日</option>
+          <option value="15">15日</option>
+          <option value="20">20日</option>
+          <option value="25">25日</option>
+          <option value="末">末日</option>
+        </select>
+      </div>
+    </div>
+    <div class="payment-preview" id="paymentPreview">支払サイトを選択すると、ここにプレビューが表示されます</div>
+
+    <!-- 源泉徴収 -->
+    <div class="section-title">税務</div>
+    <div class="fr">
+      <div class="toggle-row">
+        <label class="toggle"><input type="checkbox" id="pWithholding"><span class="slider"></span></label>
+        <label>源泉徴収対象</label>
+      </div>
+      <div class="fg"><label>適格請求書番号</label><input type="text" id="pInvoiceNo" placeholder="T1234567890123"></div>
+    </div>
+
+    <!-- 振込先 -->
+    <div class="section-title">振込先口座（外注先向け）</div>
+    <div class="fr">
+      <div class="fg"><label>銀行名</label><input type="text" id="pBankName" placeholder="三菱UFJ銀行"></div>
+      <div class="fg"><label>支店名</label><input type="text" id="pBranchName" placeholder="渋谷支店"></div>
+    </div>
+    <div class="fr3">
+      <div class="fg">
+        <label>口座種別</label>
+        <select id="pAccType">
+          <option value="普通">普通</option>
+          <option value="当座">当座</option>
+        </select>
+      </div>
+      <div class="fg"><label>口座番号</label><input type="text" id="pAccNo" placeholder="1234567"></div>
+      <div class="fg"><label>口座名義</label><input type="text" id="pAccHolder" placeholder="カ）サンプル"></div>
+    </div>
+
+    <!-- 備考 -->
+    <div class="fg" style="margin-top:16px"><label>備考</label><textarea id="pNotes" placeholder="メモ・備考"></textarea></div>
+
+    <div class="modal-actions">
+      <button class="btn btn-red" onclick="savePartner()">保存</button>
+      <button class="btn btn-outline" onclick="closeModal()">キャンセル</button>
+      <button class="btn btn-outline" id="btnDel" style="display:none;color:var(--accent);border-color:var(--accent);" onclick="deletePartner()">削除</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let partners = [];
+
+// ========== INIT ==========
+async function init() {
+  try {
+    const res = await sb.from('partners').select('*').order('name');
+    if (res.error) throw res.error;
+    partners = res.data || [];
+    renderAll();
+    renderSummary();
+  } catch(e) {
+    console.error(e);
+    document.getElementById('clientTable').innerHTML = '<div class="empty" style="color:var(--accent)">読み込みエラー: ' + (e.message||e) + '</div>';
+  }
+}
+
+// ========== SUMMARY ==========
+function renderSummary() {
+  const cl = partners.filter(p => p.is_client).length;
+  const vn = partners.filter(p => p.is_partner).length;
+  const wh = partners.filter(p => p.withholding_tax).length;
+  document.getElementById('smClients').textContent = cl + '件';
+  document.getElementById('smVendors').textContent = vn + '件';
+  document.getElementById('smWithholding').textContent = wh + '件';
+  document.getElementById('smTotal').textContent = partners.length + '件';
+}
+
+// ========== RENDER ==========
+function renderAll() {
+  const q = document.getElementById('searchInput').value.toLowerCase();
+  const cl = partners.filter(p => p.is_client && matchSearch(p, q));
+  const vn = partners.filter(p => p.is_partner && matchSearch(p, q));
+  const all = partners.filter(p => matchSearch(p, q));
+
+  document.getElementById('clientTable').innerHTML = buildTable(cl);
+  document.getElementById('vendorTable').innerHTML = buildTable(vn);
+  document.getElementById('allTable').innerHTML = buildTable(all);
+}
+
+function matchSearch(p, q) {
+  if (!q) return true;
+  return (p.name||'').toLowerCase().includes(q) || (p.name_kana||'').toLowerCase().includes(q);
+}
+
+function buildTable(list) {
+  if (!list.length) return '<div class="empty">取引先がありません</div>';
+  let html = '<table><thead><tr><th>取引先名</th><th>区分</th><th>締め日</th><th>支払月</th><th>支払日</th><th>源泉</th><th>インボイス番号</th><th>電話</th></tr></thead><tbody>';
+  list.forEach(p => {
+    const type = (p.is_client && p.is_partner) ? '<span class="badge b-both">両方</span>' : p.is_client ? '<span class="badge b-client">クライアント</span>' : '<span class="badge b-vendor">外注先</span>';
+    const wh = p.withholding_tax ? '<span class="badge b-yes">対象</span>' : '<span class="badge b-no">-</span>';
+    const closing = p.closing_day ? (p.closing_day === '末' ? '末日' : p.closing_day + '日') : '-';
+    const monthLater = p.payment_months_later != null ? ['当月','翌月','翌々月','3ヶ月後'][p.payment_months_later] || '-' : '-';
+    const payDay = p.payment_day ? (p.payment_day === '末' ? '末日' : p.payment_day + '日') : '-';
+    html += '<tr class="clickable" onclick="openEditModal(\'' + p.id + '\')">'
+      + '<td><strong>' + esc(p.name) + '</strong><br><span style="font-size:11px;color:var(--sub)">' + esc(p.name_kana||'') + '</span></td>'
+      + '<td>' + type + '</td>'
+      + '<td>' + closing + '</td>'
+      + '<td>' + monthLater + '</td>'
+      + '<td>' + payDay + '</td>'
+      + '<td>' + wh + '</td>'
+      + '<td style="font-size:12px;color:var(--sub)">' + esc(p.invoice_number||'-') + '</td>'
+      + '<td style="font-size:12px;color:var(--sub)">' + esc(p.tel||'-') + '</td>'
+      + '</tr>';
+  });
+  html += '</tbody></table>';
+  return html;
+}
+
+// ========== MODAL ==========
+function openNewModal() {
+  document.getElementById('modalTitle').textContent = '取引先登録';
+  document.getElementById('pId').value = '';
+  document.getElementById('pName').value = '';
+  document.getElementById('pKana').value = '';
+  document.getElementById('pIsClient').checked = true;
+  document.getElementById('pIsVendor').checked = false;
+  document.getElementById('pPostal').value = '';
+  document.getElementById('pTel').value = '';
+  document.getElementById('pAddress').value = '';
+  document.getElementById('pEmail').value = '';
+  document.getElementById('pClosing').value = '末';
+  document.getElementById('pMonthsLater').value = '1';
+  document.getElementById('pPayDay').value = '末';
+  document.getElementById('pWithholding').checked = false;
+  document.getElementById('pInvoiceNo').value = '';
+  document.getElementById('pBankName').value = '';
+  document.getElementById('pBranchName').value = '';
+  document.getElementById('pAccType').value = '普通';
+  document.getElementById('pAccNo').value = '';
+  document.getElementById('pAccHolder').value = '';
+  document.getElementById('pNotes').value = '';
+  document.getElementById('btnDel').style.display = 'none';
+  updatePaymentPreview();
+  document.getElementById('partnerModal').classList.add('active');
+}
+
+function openEditModal(id) {
+  const p = partners.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('modalTitle').textContent = '取引先編集';
+  document.getElementById('pId').value = p.id;
+  document.getElementById('pName').value = p.name || '';
+  document.getElementById('pKana').value = p.name_kana || '';
+  document.getElementById('pIsClient').checked = !!p.is_client;
+  document.getElementById('pIsVendor').checked = !!p.is_partner;
+  document.getElementById('pPostal').value = p.postal_code || '';
+  document.getElementById('pTel').value = p.tel || '';
+  document.getElementById('pAddress').value = p.address || '';
+  document.getElementById('pEmail').value = p.email || '';
+  document.getElementById('pClosing').value = p.closing_day || '';
+  document.getElementById('pMonthsLater').value = p.payment_months_later != null ? String(p.payment_months_later) : '';
+  document.getElementById('pPayDay').value = p.payment_day || '';
+  document.getElementById('pWithholding').checked = !!p.withholding_tax;
+  document.getElementById('pInvoiceNo').value = p.invoice_number || '';
+  document.getElementById('pBankName').value = p.bank_name || '';
+  document.getElementById('pBranchName').value = p.branch_name || '';
+  document.getElementById('pAccType').value = p.account_type || '普通';
+  document.getElementById('pAccNo').value = p.account_number || '';
+  document.getElementById('pAccHolder').value = p.account_holder || '';
+  document.getElementById('pNotes').value = p.notes || '';
+  document.getElementById('btnDel').style.display = 'block';
+  updatePaymentPreview();
+  document.getElementById('partnerModal').classList.add('active');
+}
+
+function closeModal() { document.getElementById('partnerModal').classList.remove('active'); }
+
+// ========== PAYMENT PREVIEW ==========
+function updatePaymentPreview() {
+  const closing = document.getElementById('pClosing').value;
+  const months = document.getElementById('pMonthsLater').value;
+  const payDay = document.getElementById('pPayDay').value;
+
+  if (!closing || months === '' || !payDay) {
+    document.getElementById('paymentPreview').innerHTML = '支払サイトを選択すると、ここにプレビューが表示されます';
+    return;
+  }
+
+  const closingText = closing === '末' ? '末日' : closing + '日';
+  const monthText = ['当月','翌月','翌々月','3ヶ月後'][Number(months)] || '';
+  const payDayText = payDay === '末' ? '末日' : payDay + '日';
+
+  // 具体例を計算
+  const today = new Date();
+  const exampleMonth = today.getMonth() + 1;
+  const exampleYear = today.getFullYear();
+  const closingDate = closing === '末' ? '月末' : exampleMonth + '/' + closing;
+
+  let payMonth = exampleMonth + Number(months);
+  let payYear = exampleYear;
+  if (payMonth > 12) { payMonth -= 12; payYear++; }
+  const payDate = payYear + '/' + payMonth + '/' + (payDay === '末' ? '末日' : payDay);
+
+  document.getElementById('paymentPreview').innerHTML =
+    '<strong>毎月' + closingText + '締め \u2192 ' + monthText + payDayText + '払い<\/strong><br>' +
+    '<span style="font-size:12px;margin-top:4px;display:inline-block">例: ' + exampleYear + '/' + exampleMonth + '月分 \u2192 ' + payDate + ' に支払<\/span>';
+}
+
+document.getElementById('pClosing').addEventListener('change', updatePaymentPreview);
+document.getElementById('pMonthsLater').addEventListener('change', updatePaymentPreview);
+document.getElementById('pPayDay').addEventListener('change', updatePaymentPreview);
+
+// ========== CRUD ==========
+async function savePartner() {
+  const id = document.getElementById('pId').value;
+  const name = document.getElementById('pName').value.trim();
+  if (!name) { toast('取引先名は必須です', true); return; }
+
+  const data = {
+    name,
+    name_kana: document.getElementById('pKana').value.trim() || null,
+    is_client: document.getElementById('pIsClient').checked,
+    is_partner: document.getElementById('pIsVendor').checked,
+    postal_code: document.getElementById('pPostal').value.trim() || null,
+    tel: document.getElementById('pTel').value.trim() || null,
+    address: document.getElementById('pAddress').value.trim() || null,
+    email: document.getElementById('pEmail').value.trim() || null,
+    closing_day: document.getElementById('pClosing').value || null,
+    payment_months_later: document.getElementById('pMonthsLater').value !== '' ? Number(document.getElementById('pMonthsLater').value) : null,
+    payment_day: document.getElementById('pPayDay').value || null,
+    withholding_tax: document.getElementById('pWithholding').checked,
+    invoice_number: document.getElementById('pInvoiceNo').value.trim() || null,
+    bank_name: document.getElementById('pBankName').value.trim() || null,
+    branch_name: document.getElementById('pBranchName').value.trim() || null,
+    account_type: document.getElementById('pAccType').value || null,
+    account_number: document.getElementById('pAccNo').value.trim() || null,
+    account_holder: document.getElementById('pAccHolder').value.trim() || null,
+    notes: document.getElementById('pNotes').value.trim() || null,
+    is_active: true,
+    updated_at: new Date().toISOString()
+  };
+
+  try {
+    const res = id
+      ? await sb.from('partners').update(data).eq('id', id)
+      : await sb.from('partners').insert(data);
+    if (res.error) throw res.error;
+    toast(id ? '更新しました' : '登録しました');
+    closeModal();
+    await reload();
+  } catch(e) { toast('エラー: ' + (e.message||e), true); }
+}
+
+async function deletePartner() {
+  const id = document.getElementById('pId').value;
+  if (!id || !confirm('この取引先を削除しますか？')) return;
+  try {
+    const res = await sb.from('partners').delete().eq('id', id);
+    if (res.error) throw res.error;
+    toast('削除しました');
+    closeModal();
+    await reload();
+  } catch(e) { toast('削除エラー: ' + (e.message||e), true); }
+}
+
+async function reload() {
+  const res = await sb.from('partners').select('*').order('name');
+  if (!res.error) { partners = res.data || []; renderAll(); renderSummary(); }
+}
+
+// ========== TABS ==========
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  });
+});
+
+// ========== FILTER ==========
+document.getElementById('searchInput').addEventListener('input', renderAll);
+document.getElementById('partnerModal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+// ========== UTIL ==========
+function esc(s) { if(!s) return ''; const d=document.createElement('div'); d.textContent=s; return d.innerHTML; }
+function toast(msg, err) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast show ' + (err?'toast-ng':'toast-ok');
+  setTimeout(()=>{ t.className='toast'; }, 3000);
+}
+
+// ========== START ==========
+init();
+<\/script>
+<\/body>
+<\/html>
