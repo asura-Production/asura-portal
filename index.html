@@ -15,6 +15,8 @@
   }
   * { margin:0; padding:0; box-sizing:border-box; }
   body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif; min-height:100vh; }
+
+  /* Header */
   .header { display:flex; justify-content:space-between; align-items:center; padding:20px 32px; border-bottom:1px solid var(--border); }
   .header-left { display:flex; align-items:center; gap:14px; }
   .logo { color:var(--accent); font-size:32px; font-weight:900; letter-spacing:-1px; }
@@ -22,6 +24,8 @@
   .header-right { display:flex; align-items:center; gap:12px; }
   .user-badge { display:flex; align-items:center; gap:8px; padding:6px 14px; background:var(--card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-sub); }
   .user-dot { width:8px; height:8px; background:var(--green); border-radius:50%; }
+
+  /* Summary */
   .summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; padding:24px 32px; }
   .s-card { background:var(--card); border-radius:14px; padding:24px; border:1px solid var(--border); transition:border-color .2s; }
   .s-card:hover { border-color:var(--border-hover); }
@@ -30,8 +34,11 @@
   .s-value.red { color:var(--accent); }
   .s-value.blue { color:var(--blue); }
   .s-sub { font-size:12px; color:var(--text-muted); margin-top:6px; }
+
+  /* Feature Grid */
   .section-label { padding:8px 32px 12px; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; font-weight:600; }
   .features { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; padding:0 32px 40px; }
+
   .f-card { background:var(--card); border-radius:14px; padding:24px; border:1px solid var(--border); position:relative; transition:all .2s; cursor:default; }
   .f-card.active { cursor:pointer; border-left:4px solid var(--accent); }
   .f-card.active:hover { border-color:var(--accent); background:var(--card-hover); transform:translateY(-2px); }
@@ -40,9 +47,13 @@
   .f-card h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
   .f-card .desc { font-size:13px; color:var(--text-sub); line-height:1.5; }
   .f-card .badge-soon { position:absolute; top:14px; right:14px; font-size:10px; background:#222; color:var(--text-muted); padding:3px 10px; border-radius:10px; font-weight:500; }
+
   .f-card .arrow { position:absolute; right:20px; bottom:20px; font-size:18px; color:var(--accent); opacity:0; transition:opacity .2s; }
   .f-card.active:hover .arrow { opacity:1; }
+
+  /* Footer */
   .footer { padding:20px 32px; border-top:1px solid var(--border); text-align:center; font-size:11px; color:var(--text-muted); }
+
   @media(max-width:700px) {
     .header { flex-direction:column; gap:12px; align-items:flex-start; }
     .summary, .features { grid-template-columns:1fr; }
@@ -52,31 +63,94 @@
 </style>
 </head>
 <body>
+
 <div class="header">
-  <div class="header-left"><span class="logo">asura</span><h1>Portal</h1></div>
-  <div class="header-right"><div class="user-badge"><span class="user-dot"></span><span id="userName">-</span></div></div>
+  <div class="header-left">
+    <span class="logo">asura</span>
+    <h1>Portal</h1>
+  </div>
+  <div class="header-right">
+    <div class="user-badge"><span class="user-dot"></span><span id="userName">-</span></div>
+  </div>
 </div>
+
 <div class="summary">
-  <div class="s-card"><div class="s-label">進行中 JOB</div><div class="s-value red" id="activeCount">-</div><div class="s-sub">現在アクティブな案件</div></div>
-  <div class="s-card"><div class="s-label">全JOB数</div><div class="s-value blue" id="totalCount">-</div><div class="s-sub">登録済み案件数</div></div>
-  <div class="s-card"><div class="s-label">今月の売上</div><div class="s-value">¥0</div><div class="s-sub">Phase 3で実装予定</div></div>
-  <div class="s-card"><div class="s-label">未請求案件</div><div class="s-value">0</div><div class="s-sub">Phase 3で実装予定</div></div>
+  <div class="s-card">
+    <div class="s-label">進行中 JOB</div>
+    <div class="s-value red" id="activeCount">-</div>
+    <div class="s-sub">現在アクティブな案件</div>
+  </div>
+  <div class="s-card">
+    <div class="s-label">全JOB数</div>
+    <div class="s-value blue" id="totalCount">-</div>
+    <div class="s-sub">登録済み案件数</div>
+  </div>
+  <div class="s-card">
+    <div class="s-label">今月の売上</div>
+    <div class="s-value">¥0</div>
+    <div class="s-sub">Phase 3で実装予定</div>
+  </div>
+  <div class="s-card">
+    <div class="s-label">未請求案件</div>
+    <div class="s-value">0</div>
+    <div class="s-sub">Phase 3で実装予定</div>
+  </div>
 </div>
+
 <div class="section-label">機能メニュー</div>
+
 <div class="features">
-  <div class="f-card active" onclick="location.href='job-master.html'"><div class="icon">📋</div><h3>JOBマスター</h3><div class="desc">案件の登録・編集・検索。ステータス管理、担当者アサイン、期間設定。</div><span class="arrow">→</span></div>
-  <div class="f-card disabled"><span class="badge-soon">Phase 2</span><div class="icon">🏢</div><h3>取引先マスター</h3><div class="desc">クライアント・パートナーの登録管理。支払サイト設定。</div></div>
-  <div class="f-card disabled"><span class="badge-soon">Phase 2</span><div class="icon">📝</div><h3>見積管理</h3><div class="desc">見積書の作成・PDF出力。JOBとの紐付け管理。</div></div>
-  <div class="f-card disabled"><span class="badge-soon">Phase 2</span><div class="icon">💰</div><h3>予算管理</h3><div class="desc">JOB別の予算設定と実績対比。利益率モニタリング。</div></div>
-  <div class="f-card disabled"><span class="badge-soon">Phase 2</span><div class="icon">🧾</div><h3>経費入力</h3><div class="desc">経費の登録・JOB紐付け。レシート管理。</div></div>
-  <div class="f-card disabled"><span class="badge-soon">Phase 3</span><div class="icon">📄</div><h3>売上請求</h3><div class="desc">請求書の発行・送付管理。入金ステータス追跡。</div></div>
-  <div class="f-card active" onclick="location.href='payment.html'"><div class="icon">💳</div><h3>入金管理</h3><div class="desc">入金登録・CSV取込・手形台帳・消込管理。BizSTATION連携対応。</div><span class="arrow">→</span></div>
+  <div class="f-card active" onclick="location.href='job-master.html'">
+    <div class="icon">📋</div>
+    <h3>JOBマスター</h3>
+    <div class="desc">案件の登録・編集・検索。ステータス管理、担当者アサイン、期間設定。</div>
+    <span class="arrow">→</span>
+  </div>
+  <div class="f-card active" onclick="location.href='partners.html'">
+    <div class="icon">🏢</div>
+    <h3>取引先マスター</h3>
+    <div class="desc">クライアント・パートナーの登録管理。支払サイト・源泉徴収設定。</div>
+    <span class="arrow">→</span>
+  </div>
+  <div class="f-card active" onclick="location.href='estimate.html'">
+    <div class="icon">📝</div>
+    <h3>見積管理</h3>
+    <div class="desc">見積書の作成・PDF出力。JOBとの紐付け管理。</div>
+    <span class="arrow">→</span>
+  </div>
+  <div class="f-card disabled">
+    <span class="badge-soon">Phase 2</span>
+    <div class="icon">💰</div>
+    <h3>予算管理</h3>
+    <div class="desc">JOB別の予算設定と実績対比。利益率モニタリング。</div>
+  </div>
+  <div class="f-card disabled">
+    <span class="badge-soon">Phase 2</span>
+    <div class="icon">🧾</div>
+    <h3>経費入力</h3>
+    <div class="desc">経費の登録・JOB紐付け。レシート管理。</div>
+  </div>
+  <div class="f-card disabled">
+    <span class="badge-soon">Phase 3</span>
+    <div class="icon">📄</div>
+    <h3>売上請求</h3>
+    <div class="desc">請求書の発行・送付管理。入金ステータス追跡。</div>
+  </div>
+  <div class="f-card active" onclick="location.href='payment.html'">
+    <div class="icon">💳</div>
+    <h3>入金管理</h3>
+    <div class="desc">入金登録・CSV取込・手形台帳・消込管理。BizSTATION連携対応。</div>
+    <span class="arrow">→</span>
+  </div>
 </div>
-<div class="footer">asura Portal v0.1 &mdash; Phase 1</div>
+
+<div class="footer">asura Portal v0.2 &mdash; Phase 2</div>
+
 <script>
 const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 async function load() {
   try {
     const [active, total, staffRes] = await Promise.all([
