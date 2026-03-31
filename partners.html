@@ -332,7 +332,7 @@ function openNewModal() {
   document.getElementById('pIsVendor').checked = false;
   document.getElementById('pPostal').value = '';
   document.getElementById('pTel').value = '';
-  document.getElementById('pAddress').value = '';
+  document.getEnementById('pAddress').value = '';
   document.getElementById('pEmail').value = '';
   document.getElementById('pClosing').value = '末';
   document.getElementById('pMonthsLater').value = '1';
@@ -408,8 +408,8 @@ function updatePaymentPreview() {
   const payDate = payYear + '/' + payMonth + '/' + (payDay === '末' ? '末日' : payDay);
 
   document.getElementById('paymentPreview').innerHTML =
-    '<strong>毎月' + closingText + '締め \u2192 ' + monthText + payDayText + '払い<\/strong><br>' +
-    '<span style="font-size:12px;margin-top:4px;display:inline-block">例: ' + exampleYear + '/' + exampleMonth + '月分 \u2192 ' + payDate + ' に支払<\/span>';
+    '<strong>毎月' + closingText + '締め → ' + monthText + payDayText + '払い</strong><br>' +
+    '<span style="font-size:12px;margin-top:4px;display:inline-block">例: ' + exampleYear + '/' + exampleMonth + '月分 → ' + payDate + ' に支払</span>';
 }
 
 document.getElementById('pClosing').addEventListener('change', updatePaymentPreview);
@@ -498,6 +498,6 @@ function toast(msg, err) {
 
 // ========== START ==========
 init();
-<\/script>
-<\/body>
-<\/html>
+</script>
+</body>
+</html>
