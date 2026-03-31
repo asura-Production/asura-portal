@@ -46,9 +46,9 @@
   .badge-失注 { background:rgba(255,68,68,.15); color:#ff4444; }
 
   /* Modal */
-  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; justify-content:center; align-items:center; }
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; justify-content:center; align-items:flex-start; overflow-y:auto; padding:20px 0; }
   .modal-overlay.active { display:flex; }
-  .modal { background:#1a1a1a; border-radius:14px; padding:32px; width:90%; max-width:560px; max-height:90vh; overflow-y:auto; border:1px solid #333; }
+  .modal { background:#1a1a1a; border-radius:14px; padding:32px; width:90%; max-width:560px; border:1px solid #333; margin:auto 0; }
   .modal h2 { font-size:18px; margin-bottom:20px; }
   .form-group { margin-bottom:16px; }
   .form-group label { display:block; font-size:13px; color:#999; margin-bottom:6px; }
@@ -102,7 +102,7 @@
   <select class="filter-select" id="statusFilter">
     <option value="">全て</option>
     <option value="見積中">見積中</option>
-    <option value="進行仭">進行中</option>
+    <option value="進行中">進行中</option>
     <option value="完了">完了</option>
     <option value="請求済">請求済</option>
     <option value="失注">失注</option>
@@ -127,7 +127,7 @@
       <div class="form-group">
         <label>ステータス</label>
         <select id="fStatus">
-          <option value="見積中">見積中</option>
+          <option value="見積中">見積仭</option>
           <option value="進行中">進行中</option>
           <option value="完了">完了</option>
           <option value="請求済">請求済</option>
