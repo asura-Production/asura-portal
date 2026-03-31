@@ -39,11 +39,11 @@
   .job-dates { font-size:12px; color:#666; }
 
   .badge { display:inline-block; padding:3px 10px; border-radius:12px; font-size:11px; font-weight:600; }
-  .badge-è¦ç©ä¸­ { background:rgba(255,165,0,.15); color:#ffa500; }
-  .badge-é²è¡ä¸­ { background:rgba(68,136,255,.15); color:#4488ff; }
-  .badge-å®äº { background:rgba(68,187,68,.15); color:#44bb44; }
-  .badge-è«æ±æ¸ { background:rgba(136,136,136,.15); color:#888; }
-  .badge-å¤±æ³¨ { background:rgba(255,68,68,.15); color:#ff4444; }
+  .badge-見積中 { background:rgba(255,165,0,.15); color:#ffa500; }
+  .badge-進行中 { background:rgba(68,136,255,.15); color:#4488ff; }
+  .badge-完了 { background:rgba(68,187,68,.15); color:#44bb44; }
+  .badge-請求済 { background:rgba(136,136,136,.15); color:#888; }
+  .badge-失注 { background:rgba(255,68,68,.15); color:#ff4444; }
 
   /* Modal */
   .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,.7); z-index:100; justify-content:center; align-items:center; }
@@ -94,20 +94,20 @@
     <span class="logo">asura</span>
     <h1>JOB Master</h1>
   </div>
-  <a href="index.html" class="back-link">â ãã¼ã¿ã«ã«æ»ã</a>
+  <a href="index.html" class="back-link">← ポータルに戻る</a>
 </div>
 
 <div class="toolbar">
-  <input type="text" class="search-input" id="searchInput" placeholder="JOBçªå·ã»JOBåã§æ¤ç´¢...">
+  <input type="text" class="search-input" id="searchInput" placeholder="JOB番号・JOB名で検索...">
   <select class="filter-select" id="statusFilter">
-    <option value="">å¨ã¦</option>
-    <option value="è¦ç©ä¸­">è¦ç©ä¸­</option>
-    <option value="é²è¡ä¸­">é²è¡ä¸­</option>
-    <option value="å®äº">å®äº</option>
-    <option value="è«æ±æ¸">è«æ±æ¸</option>
-    <option value="å¤±æ³¨">å¤±æ³¨</option>
+    <option value="">全て</option>
+    <option value="見積中">見積中</option>
+    <option value="進行仭">進行中</option>
+    <option value="完了">完了</option>
+    <option value="請求済">請求済</option>
+    <option value="失注">失注</option>
   </select>
-  <button class="btn-new" onclick="openCreateModal()">+ æ°è¦JOB</button>
+  <button class="btn-new" onclick="openCreateModal()">+ 新規JOB</button>
 </div>
 
 <div class="content">
@@ -117,56 +117,56 @@
 <!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
-    <h2 id="modalTitle">æ°è¦JOB</h2>
+    <h2 id="modalTitle">新規JOB</h2>
     <input type="hidden" id="editId">
     <div class="form-row">
       <div class="form-group">
-        <label>JOBçªå· *</label>
-        <input type="text" id="fJobCode" placeholder="ä¾: 2603-S1a">
+        <label>JOB番号 *</label>
+        <input type="text" id="fJobCode" placeholder="例: 2603-S1a">
       </div>
       <div class="form-group">
-        <label>ã¹ãã¼ã¿ã¹</label>
+        <label>ステータス</label>
         <select id="fStatus">
-          <option value="è¦ç©ä¸­">è¦ç©ä¸­</option>
-          <option value="é²è¡ä¸­">é²è¡ä¸­</option>
-          <option value="å®äº">å®äº</option>
-          <option value="è«æ±æ¸">è«æ±æ¸</option>
-          <option value="å¤±æ³¨">å¤±æ³¨</option>
+          <option value="見積中">見積中</option>
+          <option value="進行中">進行中</option>
+          <option value="完了">完了</option>
+          <option value="請求済">請求済</option>
+          <option value="失注">失注</option>
         </select>
       </div>
     </div>
     <div class="form-group">
-      <label>JOBå *</label>
-      <input type="text" id="fJobName" placeholder="æ¡ä»¶åãå¥å">
+      <label>JOB名 *</label>
+      <input type="text" id="fJobName" placeholder="案件名を入力">
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>ã¯ã©ã¤ã¢ã³ã</label>
-        <select id="fClient"><option value="">-- é¸æ --</option></select>
+        <label>クライアント</label>
+        <select id="fClient"><option value="">-- 選択 --</option></select>
       </div>
       <div class="form-group">
-        <label>å¶æ¥­æå½</label>
-        <select id="fSalesPerson"><option value="">-- é¸æ --</option></select>
+        <label>営業担当</label>
+        <select id="fSalesPerson"><option value="">-- 選択 --</option></select>
       </div>
     </div>
     <div class="form-row">
       <div class="form-group">
-        <label>éå§æ¥</label>
+        <label>開始日</label>
         <input type="date" id="fStartDate">
       </div>
       <div class="form-group">
-        <label>çµäºæ¥</label>
+        <label>終了日</label>
         <input type="date" id="fEndDate">
       </div>
     </div>
     <div class="form-group">
-      <label>åè</label>
-      <textarea id="fDescription" placeholder="ã¡ã¢ã»åè"></textarea>
+      <label>備考</label>
+      <textarea id="fDescription" placeholder="メモ・備考"></textarea>
     </div>
     <div class="modal-actions">
-      <button class="btn-save" onclick="saveJob()">ä¿å­</button>
-      <button class="btn-cancel" onclick="closeModal()">ã­ã£ã³ã»ã«</button>
-      <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteJob()">åé¤</button>
+      <button class="btn-save" onclick="saveJob()">保存</button>
+      <button class="btn-cancel" onclick="closeModal()">キャンセル</button>
+      <button class="btn-delete" id="btnDelete" style="display:none" onclick="deleteJob()">削除</button>
     </div>
   </div>
 </div>
@@ -206,13 +206,13 @@ async function init() {
   } catch (e) {
     console.error('Init error:', e);
     document.getElementById('jobList').innerHTML =
-      '<div class="error-msg">ãã¼ã¿ã®åå¾ã«å¤±æãã¾ãã: ' + (e.message || e) + '</div>';
+      '<div class="error-msg">データの取得に失敗しました: ' + (e.message || e) + '</div>';
   }
 }
 
 function showLoading() {
   document.getElementById('jobList').innerHTML =
-    '<div class="loading"><div style="width:40px;height:40px;border:3px solid #333;border-top-color:#ff4444;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>ãã¼ã¿ãèª­ã¿è¾¼ã¿ä¸­...</div>' +
+    '<div class="loading"><div style="width:40px;height:40px;border:3px solid #333;border-top-color:#ff4444;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px"></div>データを読み込み中...</div>' +
     '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
 }
 
@@ -228,7 +228,7 @@ function renderJobs() {
   });
 
   if (filtered.length === 0) {
-    document.getElementById('jobList').innerHTML = '<div class="empty">JOBãè¦ã¤ããã¾ãã</div>';
+    document.getElementById('jobList').innerHTML = '<div class="empty">JOBが見つかりません</div>';
     return;
   }
 
@@ -256,24 +256,24 @@ function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.
 // --- Dropdowns ---
 function populateDropdowns() {
   const cSel = document.getElementById('fClient');
-  cSel.innerHTML = '<option value="">-- é¸æ --</option>' +
+  cSel.innerHTML = '<option value="">-- 選択 --</option>' +
     clients.map(c => '<option value="' + c.id + '">' + esc(c.name) + '</option>').join('');
 
   const sSel = document.getElementById('fSalesPerson');
-  sSel.innerHTML = '<option value="">-- é¸æ --</option>' +
+  sSel.innerHTML = '<option value="">-- 選択 --</option>' +
     staff.map(s => '<option value="' + s.id + '">' + esc(s.name) + '</option>').join('');
 }
 
 // --- Modal ---
 function openCreateModal() {
-  document.getElementById('modalTitle').textContent = 'æ°è¦JOB';
+  document.getElementById('modalTitle').textContent = '新規JOB';
   document.getElementById('editId').value = '';
   document.getElementById('fJobCode').value = '';
   document.getElementById('fJobName').value = '';
-  document.getElementById('fStatus').value = 'è¦ç©ä¸­';
+  document.getElementById('fStatus').value = '見積中';
   document.getElementById('fClient').value = '';
   document.getElementById('fSalesPerson').value = '';
-  document.getElententById('fStartDate').value = '';
+  document.getElementById('fStartDate').value = '';
   document.getElementById('fEndDate').value = '';
   document.getElementById('fDescription').value = '';
   document.getElementById('btnDelete').style.display = 'none';
@@ -283,11 +283,11 @@ function openCreateModal() {
 function openEditModal(id) {
   const job = allJobs.find(j => j.id === id);
   if (!job) return;
-  document.getElementById('modalTitle').textContent = 'JOBç·¨é';
+  document.getElementById('modalTitle').textContent = 'JOB編集';
   document.getElementById('editId').value = job.id;
   document.getElementById('fJobCode').value = job.job_code || '';
   document.getElementById('fJobName').value = job.title || '';
-  document.getElementById('fStatus').value = job.status || 'è¦ç©ä¸­';
+  document.getElementById('fStatus').value = job.status || '見積中';
   document.getElementById('fClient').value = job.client_id || '';
   document.getElementById('fSalesPerson').value = job.staff_id || '';
   document.getElementById('fStartDate').value = job.started_at || '';
@@ -306,7 +306,7 @@ async function saveJob() {
   const id = document.getElementById('editId').value;
   const code = document.getElementById('fJobCode').value.trim();
   const name = document.getElementById('fJobName').value.trim();
-  if (!code || !name) { showToast('JOBçªå·ã¨JOBåã¯å¿é ã§ã', true); return; }
+  if (!code || !name) { showToast('JOB番号とJOB名は必須です', true); return; }
 
   const data = {
     job_code: code,
@@ -327,26 +327,26 @@ async function saveJob() {
       res = await supabase.from('jobs').insert(data);
     }
     if (res.error) throw res.error;
-    showToast(id ? 'æ´æ°ãã¾ãã' : 'ä½æãã¾ãã');
+    showToast(id ? '更新しました' : '作成しました');
     closeModal();
     await refreshJobs();
   } catch (e) {
-    showToast('ã¨ã©ã¼: ' + (e.message || e), true);
+    showToast('エラー: ' + (e.message || e), true);
   }
 }
 
 async function deleteJob() {
   const id = document.getElementById('editId').value;
   if (!id) return;
-  if (!confirm('ãã®JOBãåé¤ãã¾ããï¼')) return;
+  if (!confirm('このJOBを削除しますか？')) return;
   try {
     const res = await supabase.from('jobs').delete().eq('id', id);
     if (res.error) throw res.error;
-    showToast('åé¤ãã¾ãã');
+    showToast('削除しました');
     closeModal();
     await refreshJobs();
   } catch (e) {
-    showToast('åé¤ã¨ã©ã¼: ' + (e.message || e), true);
+    showToast('削除エラー: ' + (e.message || e), true);
   }
 }
 
