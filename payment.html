@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>入金管理 - asura Portal</title>
+<title>å¥éç®¡ç - asura Portal</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
@@ -61,28 +61,28 @@
 
   /* Badges */
   .badge{display:inline-block;padding:2px 10px;border-radius:10px;font-size:11px;font-weight:600;}
-  .b-振込{background:rgba(68,136,255,.12);color:var(--blue);}
-  .b-手形{background:rgba(170,102,255,.12);color:var(--purple);}
-  .b-現金{background:rgba(68,187,68,.12);color:var(--green);}
-  .b-小切手{background:rgba(255,165,0,.12);color:var(--orange);}
-  .b-相殺{background:rgba(136,136,136,.12);color:var(--sub);}
-  .b-その他{background:rgba(136,136,136,.12);color:var(--sub);}
-  .b-未消込{background:rgba(255,68,68,.12);color:var(--accent);}
-  .b-一部消込{background:rgba(255,165,0,.12);color:var(--orange);}
-  .b-消込済{background:rgba(68,187,68,.12);color:var(--green);}
-  .b-未到来{background:rgba(255,165,0,.12);color:var(--orange);}
-  .b-取立依頼済{background:rgba(68,136,255,.12);color:var(--blue);}
-  .b-満期入金済{background:rgba(68,187,68,.12);color:var(--green);}
-  .b-不渡ら{background:rgba(255,68,68,.12);color:var(--accent);}
-  .b-裿書譲渡{background:rgba(170,102,255,.12);color:var(--purple);}
+  .b-æ¯è¾¼{background:rgba(68,136,255,.12);color:var(--blue);}
+  .b-æå½¢{background:rgba(170,102,255,.12);color:var(--purple);}
+  .b-ç¾é{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-å°åæ{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-ç¸æ®º{background:rgba(136,136,136,.12);color:var(--sub);}
+  .b-ãã®ä»{background:rgba(136,136,136,.12);color:var(--sub);}
+  .b-æªæ¶è¾¼{background:rgba(255,68,68,.12);color:var(--accent);}
+  .b-ä¸é¨æ¶è¾¼{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-æ¶è½¼æ¸{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-æªå°æ¥{background:rgba(255,165,0,.12);color:var(--orange);}
+  .b-åç«ä¾é ¼æ¸{background:rgba(68,136,255,.12);color:var(--blue);}
+  .b-æºæå¥éæ¸{background:rgba(68,187,68,.12);color:var(--green);}
+  .b-ä¸æ¸¡ã{background:rgba(255,68,68,.12);color:var(--accent);}
+  .b-è£æ¸è­²æ¸¡{background:rgba(170,102,255,.12);color:var(--purple);}
 
   .amount{text-align:right;font-family:'SF Mono',Menlo,monospace;font-weight:600;}
   .amount.positive{color:var(--green);}
 
   /* Modal */
-  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:center;}
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:100;justify-content:center;align-items:flex-start;overflow-y:auto;padding:20px 0;}
   .modal-overlay.active{display:flex;}
-  .modal{background:var(--card2);border-radius:14px;padding:28px;width:92%;max-width:600px;max-height:90vh;overflow-y:auto;border:1px solid var(--border2);}
+  .modal{background:var(--card2);border-radius:14px;padding:28px;width:92%;max-width:600px;border:1px solid var(--border2);margin:auto 0;}
   .modal h2{font-size:17px;margin-bottom:18px;}
   .fg{margin-bottom:14px;}
   .fg label{display:block;font-size:12px;color:var(--sub);margin-bottom:5px;}
@@ -143,61 +143,61 @@
 <div class="header">
   <div class="header-left">
     <span class="logo">asura</span>
-    <h1>入金管理</h1>
+    <h1>å¥éç®¡ç</h1>
   </div>
-  <a href="index.html" class="back-link">← ポータルに戻る</a>
+  <a href="index.html" class="back-link">â ãã¼ã¿ã«ã«æ»ã</a>
 </div>
 
 <!-- Tabs -->
 <div class="tabs">
-  <div class="tab active" data-tab="list">入金一覧</div>
-  <div class="tab" data-tab="bills">手形台帳</div>
-  <div class="tab" data-tab="csv">CSV取り込み</div>
+  <div class="tab active" data-tab="list">å¥éä¸è¦§</div>
+  <div class="tab" data-tab="bills">æå½¢å°å¸³</div>
+  <div class="tab" data-tab="csv">CSVåãè¾¼ã¿</div>
 </div>
 
 <!-- Summary -->
 <div class="summary">
-  <div class="s-card"><div class="s-label">今月入金合計</div><div class="s-val green" id="smTotal">-</div></div>
-  <div class="s-card"><div class="s-label">未消込</div><div class="s-val red" id="smUnmatched">-</div></div>
-  <div class="s-card"><div class="s-label">手形 未到来</div><div class="s-val purple" id="smBills">-</div></div>
-  <div class="s-card"><div class="s-label">今月件数</div><div class="s-val blue" id="smCount">-</div></div>
+  <div class="s-card"><div class="s-label">ä»æå¥éåè¨</div><div class="s-val green" id="smTotal">-</div></div>
+  <div class="s-card"><div class="s-label">æªæ¶è¾¼</div><div class="s-val red" id="smUnmatched">-</div></div>
+  <div class="s-card"><div class="s-label">æå½¢ æªå°æ¥</div><div class="s-val purple" id="smBills">-</div></div>
+  <div class="s-card"><div class="s-label">ä»æä»¶æ°</div><div class="s-val blue" id="smCount">-</div></div>
 </div>
 
-<!-- ========== TAB: 入金一覧 ========== -->
+<!-- ========== TAB: å¥éä¸è¦§ ========== -->
 <div class="tab-content active" id="panel-list">
   <div class="toolbar">
-    <input type="text" class="search" id="searchPay" placeholder="振込人名・クライアント名で検索...">
+    <input type="text" class="search" id="searchPay" placeholder="æ¯è¾¼äººåã»ã¯ã©ã¤ã¢ã³ãåã§æ¤ç´¢...">
     <select class="filter" id="filterType">
-      <option value="">全種別</option>
-      <option value="振込">振込</option>
-      <option value="手形">手形</option>
-      <option value="現金">現金</option>
-      <option value="小切手">小切手</option>
-      <option value="相殺">相殺</option>
+      <option value="">å¨ç¨®å¥</option>
+      <option value="æ¯è¾¼">æ¯è¾¼</option>
+      <option value="æå½¢">æå½¢</option>
+      <option value="ç¾é">ç¾é</option>
+      <option value="å°åæ">å°åæ</option>
+      <option value="ç¸æ®º">ç¸æ®º</option>
     </select>
     <select class="filter" id="filterMatch">
-      <option value="">全ステータス</option>
-      <option value="未消込">未消込</option>
-      <option value="一部消込">一部消込</option>
-      <option value="消込済">消込済</option>
+      <option value="">å¨ã¹ãã¼ã¿ã¹</option>
+      <option value="æªæ¶è¾¼">æªæ¶è¾¼</option>
+      <option value="ä¸é¨æ¶è¾¼">ä¸é¨æ¶è¾¼</option>
+      <option value="æ¶è¾¼æ¸">æ¶è¾¼æ¸</option>
     </select>
-    <button class="btn btn-red" onclick="openPaymentModal()">+ 入金登録</button>
+    <button class="btn btn-red" onclick="openPaymentModal()">+ å¥éç»é²</button>
   </div>
   <div class="content">
     <div class="tbl-wrap" id="payTable"></div>
   </div>
 </div>
 
-<!-- ========== TAB: 手形台帳 ========== -->
+<!-- ========== TAB: æå½¢å°å¸³ ========== -->
 <div class="tab-content" id="panel-bills">
   <div class="toolbar">
     <select class="filter" id="filterBillStatus">
-      <option value="">全ステータス</option>
-      <option value="未到来">未到来</option>
-      <option value="取立依頼済">取立依頼済</option>
-      <option value="渀期入金済">満期入金済</option>
-      <option value="不渡り">不渡り</option>
-      <option value="裏書譲渡">裿書譲渡</option>
+      <option value="">å¨ã¹ãã¼ã¿ã¹</option>
+      <option value="æªå°æ¥">æªå°æ¥</option>
+      <option value="åç«ä¾é ¼æ¸">åç«ä¾é ¼æ¸</option>
+      <option value="æºæå¥éæ¸">æºæå¥éæ¸</option>
+      <option value="ä¸æ¸¡ã">ä¸æ¸¡ã</option>
+      <option value="è£æ¸è­²æ¸¡">è£æ¸è­²æ¸¡</option>
     </select>
   </div>
   <div class="content">
@@ -205,79 +205,79 @@
   </div>
 </div>
 
-<!-- ========== TAB: CSV取り込み ========== -->
+<!-- ========== TAB: CSVåãè¾¼ã¿ ========== -->
 <div class="tab-content" id="panel-csv">
   <div class="content" style="padding-top:20px;">
     <div class="csv-area" id="csvArea" onclick="document.getElementById('csvFile').click()">
-      <p>BizSTATION CSVファイルをドラッグ&ドロップ</p>
-      <p class="hint">またはクリックしてファイルを選択（.csv）</p>
+      <p>BizSTATION CSVãã¡ã¤ã«ããã©ãã°&ãã­ãã</p>
+      <p class="hint">ã¾ãã¯ã¯ãªãã¯ãã¦ãã¡ã¤ã«ãé¸æï¼.csvï¼</p>
       <input type="file" id="csvFile" accept=".csv" style="display:none">
     </div>
     <div id="csvResult"></div>
     <div id="csvPreview"></div>
     <div style="display:none;margin-top:16px;" id="csvActions">
-      <button class="btn btn-red" onclick="importCsv()">この内容で取り込む</button>
-      <button class="btn btn-outline" onclick="cancelCsv()" style="margin-left:8px;">キャンセル</button>
+      <button class="btn btn-red" onclick="importCsv()">ãã®åå®¹ã§åãè¾¼ã</button>
+      <button class="btn btn-outline" onclick="cancelCsv()" style="margin-left:8px;">ã­ã£ã³ã»ã«</button>
     </div>
-    <h3 style="margin-top:32px;font-size:14px;color:var(--sub);">取り込み履歴</h3>
+    <h3 style="margin-top:32px;font-size:14px;color:var(--sub);">åãè¾¼ã¿å±¥æ­´</h3>
     <div id="csvHistory" style="margin-top:12px;"></div>
   </div>
 </div>
 
-<!-- ========== 入金登録/編集モーダル ========== -->
+<!-- ========== å¥éç»é²/ç·¨éã¢ã¼ãã« ========== -->
 <div class="modal-overlay" id="payModal">
   <div class="modal">
-    <h2 id="payModalTitle">入金登録</h2>
+    <h2 id="payModalTitle">å¥éç»é²</h2>
     <input type="hidden" id="pId">
     <div class="fr">
-      <div class="fg"><label>入金日 *</label><input type="date" id="pDate"></div>
-      <div class="fg"><label>金額（税込）*</label><input type="number" id="pAmount" placeholder="550000"></div>
+      <div class="fg"><label>å¥éæ¥ *</label><input type="date" id="pDate"></div>
+      <div class="fg"><label>éé¡ï¼ç¨è¾¼ï¼*</label><input type="number" id="pAmount" placeholder="550000"></div>
     </div>
     <div class="fr">
-      <div class="fg"><label>入金種別</label>
+      <div class="fg"><label>å¥éç¨®å¥</label>
         <select id="pType">
-          <option value="振込">振込</option>
-          <option value="手形">手形</option>
-          <option value="現金">現金</option>
-          <option value="小切手">小切手</option>
-          <option value="相殺">相殺</option>
-          <option value="その他">その他</option>
+          <option value="æ¯è¾¼">æ¯è¾¼</option>
+          <option value="æå½¢">æå½¢</option>
+          <option value="ç¾é">ç¾é</option>
+          <option value="å°åæ">å°åæ</option>
+          <option value="ç¸æ®º">ç¸æ®º</option>
+          <option value="ãã®ä»">ãã®ä»</option>
         </select>
       </div>
-      <div class="fg"><label>振込人名</label><input type="text" id="pPayer" placeholder="カ）サンプルクライアント"></div>
+      <div class="fg"><label>æ¯è¾¼äººå</label><input type="text" id="pPayer" placeholder="ã«ï¼ãµã³ãã«ã¯ã©ã¤ã¢ã³ã"></div>
     </div>
     <div class="fr">
-      <div class="fg"><label>クライアント</label><select id="pClient"><option value="">-- 選択 --</option></select></div>
-      <div class="fg"><label>入金口座</label><select id="pBank"><option value="">-- 選択 --</option></select></div>
+      <div class="fg"><label>ã¯ã©ã¤ã¢ã³ã</label><select id="pClient"><option value="">-- é¸æ --</option></select></div>
+      <div class="fg"><label>å¥éå£åº§</label><select id="pBank"><option value="">-- é¸æ --</option></select></div>
     </div>
 
-    <!-- 手形フィールド -->
+    <!-- æå½¢ãã£ã¼ã«ã -->
     <div class="bill-fields" id="billFields">
-      <h4>手形情報</h4>
+      <h4>æå½¢æå ±</h4>
       <div class="fr">
-        <div class="fg"><label>手形番号</label><input type="text" id="pBillNo" placeholder="T-2026-0315-001"></div>
-        <div class="fg"><label>振出人</label><input type="text" id="pBillIssuer" placeholder="株式会社博報堂"></div>
+        <div class="fg"><label>æå½¢çªå·</label><input type="text" id="pBillNo" placeholder="T-2026-0315-001"></div>
+        <div class="fg"><label>æ¯åºäºº</label><input type="text" id="pBillIssuer" placeholder="æ ªå¼ä¼ç¤¾åå ±å "></div>
       </div>
       <div class="fr">
-        <div class="fg"><label>手形支払銀行</label><input type="text" id="pBillBank" placeholder="みずほ銀行 新橋支店"></div>
-        <div class="fg"><label>満期日 *</label><input type="date" id="pMaturity"></div>
+        <div class="fg"><label>æå½¢æ¯æéè¡</label><input type="text" id="pBillBank" placeholder="ã¿ãã»éè¡ æ°æ©æ¯åº"></div>
+        <div class="fg"><label>æ¸ææ¥ *</label><input type="date" id="pMaturity"></div>
       </div>
-      <div class="fg"><label>手形ステータス</label>
+      <div class="fg"><label>æå½¢ã¹ãã¼ã¿ã¹</label>
         <select id="pBillStatus">
-          <option value="未到来">未到来</option>
-          <option value="取立依頼済">取立依頼済</option>
-          <option value="満期入金済">満期入金済</option>
-          <option value="不渡り">不渡り</option>
-          <option value="裏書譲渡">裏書譲渡</option>
+          <option value="æªå°æ¥">æªå°æ¥</option>
+          <option value="åç«ä¾é ¼æ¸">åç«ä¾é ¼æ¸</option>
+          <option value="æºæå¥éæ¸">æºæå¥éæ¸</option>
+          <option value="ä¸æ¸¡ã">ä¸æ¸¡ã</option>
+          <option value="è£æ¸è­²æ¸¡">è£æ¸è­²æ¸¡</option>
         </select>
       </div>
     </div>
 
-    <div class="fg"><label>メモ</label><textarea id="pMemo" placeholder="備考"></textarea></div>
+    <div class="fg"><label>ã¡ã¢</label><textarea id="pMemo" placeholder="åè"></textarea></div>
     <div class="modal-actions">
-      <button class="btn btn-red" onclick="savePayment()">保存</button>
-      <button class="btn btn-outline" onclick="closePayModal()">キャンセル</button>
-      <button class="btn btn-outline" id="pBtnDel" style="display:none;color:var(--accent);border-color:var(--accent);" onclick="deletePayment()">削除</button>
+      <button class="btn btn-red" onclick="savePayment()">ä¿å­</button>
+      <button class="btn btn-outline" onclick="closePayModal()">ã­ã£ã³ã»ã«</button>
+      <button class="btn btn-outline" id="pBtnDel" style="display:none;color:var(--accent);border-color:var(--accent);" onclick="deletePayment()">åé¤</button>
     </div>
   </div>
 </div>
@@ -293,7 +293,7 @@ let payments = [], clients = [], banks = [], csvParsed = [];
 
 // ========== INIT ==========
 async function init() {
-  document.getElementById('payTable').innerHTML = '<div class="loading">読み込み中...</div>';
+  document.getElementById('payTable').innerHTML = '<div class="loading">èª­ã¿è¾¼ã¿ä¸­...</div>';
   try {
     const [payRes, cliRes, bankRes] = await Promise.all([
       sb.from('payments_received').select('*, partners:client_id(name), bank_accounts:bank_account_id(bank_name,branch_name)').order('payment_date', { ascending: false }),
@@ -311,7 +311,7 @@ async function init() {
     loadCsvHistory();
   } catch(e) {
     console.error(e);
-    document.getElementById('payTable').innerHTML = '<div class="empty" style="color:var(--accent)">読み込みエラー: ' + (e.message||e) + '</div>';
+    document.getElementById('payTable').innerHTML = '<div class="empty" style="color:var(--accent)">èª­ã¿è¾¼ã¿ã¨ã©ã¼: ' + (e.message||e) + '</div>';
   }
 }
 
@@ -323,13 +323,13 @@ function renderSummary() {
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
   const totalAmt = thisMonth.reduce((s,p) => s + Number(p.amount||0), 0);
-  const unmatched = payments.filter(p => p.match_status === '未消込').length;
-  const billsPending = payments.filter(p => p.payment_type === '手形' && p.bill_status === '未到来').length;
+  const unmatched = payments.filter(p => p.match_status === 'æªæ¶è¾¼').length;
+  const billsPending = payments.filter(p => p.payment_type === 'æå½¢' && p.bill_status === 'æªå°æ¥').length;
 
-  document.getElementById('smTotal').textContent = '¥' + totalAmt.toLocaleString();
-  document.getElementById('smUnmatched').textContent = unmatched + '件';
-  document.getElementById('smBills').textContent = billsPending + '件';
-  document.getElementById('smCount').textContent = thisMonth.length + '件';
+  document.getElementById('smTotal').textContent = 'Â¥' + totalAmt.toLocaleString();
+  document.getElementById('smUnmatched').textContent = unmatched + 'ä»¶';
+  document.getElementById('smBills').textContent = billsPending + 'ä»¶';
+  document.getElementById('smCount').textContent = thisMonth.length + 'ä»¶';
 }
 
 // ========== PAYMENTS LIST ==========
@@ -345,9 +345,9 @@ function renderPayments() {
     return nameMatch && typeMatch && matchMatch;
   });
 
-  if (!list.length) { document.getElementById('payTable').innerHTML = '<div class="empty">入金データがありません</div>'; return; }
+  if (!list.length) { document.getElementById('payTable').innerHTML = '<div class="empty">å¥éãã¼ã¿ãããã¾ãã</div>'; return; }
 
-  let html = '<table><thead><tr><th>入金日</th><th>種別</th><th>振込人名</th><th>クライアント</th><th>口座</th><th style="text-align:right">金額</th><th>消込</th><th>メモ</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>å¥éæ¥</th><th>ç¨®å¥</th><th>æ¯è¾¼äººå</th><th>ã¯ã©ã¤ã¢ã³ã</th><th>å£åº§</th><th style="text-align:right">éé¡</th><th>æ¶è¾¼</th><th>ã¡ã¢</th></tr></thead><tbody>';
   list.forEach(p => {
     const clientName = p.partners?.name || '-';
     const bankName = p.bank_accounts ? (p.bank_accounts.bank_name + ' ' + (p.bank_accounts.branch_name||'')) : '-';
@@ -357,7 +357,7 @@ function renderPayments() {
       + '<td>' + esc(p.payer_name||'-') + '</td>'
       + '<td>' + esc(clientName) + '</td>'
       + '<td style="font-size:12px;color:var(--sub)">' + esc(bankName) + '</td>'
-      + '<td class="amount positive">¥' + Number(p.amount).toLocaleString() + '</td>'
+      + '<td class="amount positive">Â¥' + Number(p.amount).toLocaleString() + '</td>'
       + '<td><span class="badge b-' + p.match_status + '">' + esc(p.match_status) + '</span></td>'
       + '<td style="max-width:120px;overflow:hidden;text-overflow:ellipsis;color:var(--sub);font-size:12px">' + esc(p.memo||'') + '</td>'
       + '</tr>';
@@ -369,14 +369,14 @@ function renderPayments() {
 // ========== BILLS LEDGER ==========
 function renderBills() {
   const fs = document.getElementById('filterBillStatus').value;
-  let bills = payments.filter(p => p.payment_type === '手形');
+  let bills = payments.filter(p => p.payment_type === 'æå½¢');
   if (fs) bills = bills.filter(b => b.bill_status === fs);
   bills.sort((a,b) => (a.maturity_date||'').localeCompare(b.maturity_date||''));
 
-  if (!bills.length) { document.getElementById('billTable').innerHTML = '<div class="empty">手形データがありません</div>'; return; }
+  if (!bills.length) { document.getElementById('billTable').innerHTML = '<div class="empty">æå½¢ãã¼ã¿ãããã¾ãã</div>'; return; }
 
   const today = new Date().toISOString().slice(0,10);
-  let html = '<table><thead><tr><th>手形番号</th><th>振出人</th><th>支払銀行</th><th style="text-align:right">金額</th><th>受取日</th><th>満期日</th><th>残日数</th><th>ステータス</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th>æå½¢çªå·</th><th>æ¯åºäºº</th><th>æ¯æéè¡</th><th style="text-align:right">éé¡</th><th>ååæ¥</th><th>æºææ¥</th><th>æ®æ¥æ°</th><th>ã¹ãã¼ã¿ã¹</th></tr></thead><tbody>';
   bills.forEach(b => {
     const days = b.maturity_date ? Math.ceil((new Date(b.maturity_date) - new Date()) / 86400000) : '-';
     const daysColor = typeof days === 'number' ? (days < 0 ? 'var(--accent)' : days < 14 ? 'var(--orange)' : 'var(--green)') : 'var(--sub)';
@@ -384,10 +384,10 @@ function renderBills() {
       + '<td style="font-family:monospace;color:var(--purple)">' + esc(b.bill_number||'-') + '</td>'
       + '<td>' + esc(b.bill_issuer||'-') + '</td>'
       + '<td style="font-size:12px;color:var(--sub)">' + esc(b.bill_bank||'-') + '</td>'
-      + '<td class="amount positive">¥' + Number(b.amount).toLocaleString() + '</td>'
+      + '<td class="amount positive">Â¥' + Number(b.amount).toLocaleString() + '</td>'
       + '<td>' + esc(b.payment_date) + '</td>'
       + '<td>' + esc(b.maturity_date||'-') + '</td>'
-      + '<td style="font-weight:700;color:' + daysColor + '">' + days + '日</td>'
+      + '<td style="font-weight:700;color:' + daysColor + '">' + days + 'æ¥</td>'
       + '<td><span class="badge b-' + b.bill_status + '">' + esc(b.bill_status) + '</span></td>'
       + '</tr>';
   });
@@ -398,18 +398,18 @@ function renderBills() {
 // ========== DROPDOWNS ==========
 function fillDropdowns() {
   const cs = document.getElementById('pClient');
-  cs.innerHTML = '<option value="">-- 選択 --</option>' + clients.map(c => '<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
+  cs.innerHTML = '<option value="">-- é¸æ --</option>' + clients.map(c => '<option value="'+c.id+'">'+esc(c.name)+'</option>').join('');
   const bs = document.getElementById('pBank');
-  bs.innerHTML = '<option value="">-- 選択 --</option>' + banks.map(b => '<option value="'+b.id+'">'+esc(b.bank_name+' '+( b.branch_name||''))+'</option>').join('');
+  bs.innerHTML = '<option value="">-- é¸æ --</option>' + banks.map(b => '<option value="'+b.id+'">'+esc(b.bank_name+' '+( b.branch_name||''))+'</option>').join('');
 }
 
 // ========== MODAL ==========
 function openPaymentModal() {
-  document.getElementById('payModalTitle').textContent = '入金登録';
+  document.getElementById('payModalTitle').textContent = 'å¥éç»é²';
   document.getElementById('pId').value = '';
   document.getElementById('pDate').value = new Date().toISOString().slice(0,10);
   document.getElementById('pAmount').value = '';
-  document.getElementById('pType').value = '振込';
+  document.getElementById('pType').value = 'æ¯è¾¼';
   document.getElementById('pPayer').value = '';
   document.getElementById('pClient').value = '';
   document.getElementById('pBank').value = banks.find(b => true)?.id || '';
@@ -417,7 +417,7 @@ function openPaymentModal() {
   document.getElementById('pBillIssuer').value = '';
   document.getElementById('pBillBank').value = '';
   document.getElementById('pMaturity').value = '';
-  document.getElementById('pBillStatus').value = '未到来';
+  document.getElementById('pBillStatus').value = 'æªå°æ¥';
   document.getElementById('pMemo').value = '';
   document.getElementById('pBtnDel').style.display = 'none';
   toggleBillFields();
@@ -427,11 +427,11 @@ function openPaymentModal() {
 function openEditPayment(id) {
   const p = payments.find(x => x.id === id);
   if (!p) return;
-  document.getElementById('payModalTitle').textContent = '入金編集';
+  document.getElementById('payModalTitle').textContent = 'å¥éç·¨é';
   document.getElementById('pId').value = p.id;
   document.getElementById('pDate').value = p.payment_date || '';
   document.getElementById('pAmount').value = p.amount || '';
-  document.getElementById('pType').value = p.payment_type || '振込';
+  document.getElementById('pType').value = p.payment_type || 'æ¯è¾¼';
   document.getElementById('pPayer').value = p.payer_name || '';
   document.getElementById('pClient').value = p.client_id || '';
   document.getElementById('pBank').value = p.bank_account_id || '';
@@ -439,7 +439,7 @@ function openEditPayment(id) {
   document.getElementById('pBillIssuer').value = p.bill_issuer || '';
   document.getElementById('pBillBank').value = p.bill_bank || '';
   document.getElementById('pMaturity').value = p.maturity_date || '';
-  document.getElementById('pBillStatus').value = p.bill_status || '未到来';
+  document.getElementById('pBillStatus').value = p.bill_status || 'æªå°æ¥';
   document.getElementById('pMemo').value = p.memo || '';
   document.getElementById('pBtnDel').style.display = 'block';
   toggleBillFields();
@@ -449,7 +449,7 @@ function openEditPayment(id) {
 function closePayModal() { document.getElementById('payModal').classList.remove('active'); }
 
 function toggleBillFields() {
-  const show = document.getElementById('pType').value === '手形';
+  const show = document.getElementById('pType').value === 'æå½¢';
   document.getElementById('billFields').classList.toggle('show', show);
 }
 document.getElementById('pType').addEventListener('change', toggleBillFields);
@@ -459,7 +459,7 @@ async function savePayment() {
   const id = document.getElementById('pId').value;
   const date = document.getElementById('pDate').value;
   const amount = document.getElementById('pAmount').value;
-  if (!date || !amount) { toast('入金日と金額は必須です', true); return; }
+  if (!date || !amount) { toast('å¥éæ¥ã¨éé¡ã¯å¿é ã§ã', true); return; }
 
   const data = {
     payment_date: date,
@@ -471,12 +471,12 @@ async function savePayment() {
     memo: document.getElementById('pMemo').value || null,
     source: 'manual'
   };
-  if (data.payment_type === '手形') {
+  if (data.payment_type === 'æå½¢') {
     data.bill_number = document.getElementById('pBillNo').value || null;
     data.bill_issuer = document.getElementById('pBillIssuer').value || null;
     data.bill_bank = document.getElementById('pBillBank').value || null;
     data.maturity_date = document.getElementById('pMaturity').value || null;
-    data.bill_status = document.getElementById('pBillStatus').value || '未到来';
+    data.bill_status = document.getElementById('pBillStatus').value || 'æªå°æ¥';
   }
 
   try {
@@ -484,22 +484,22 @@ async function savePayment() {
       ? await sb.from('payments_received').update(data).eq('id', id)
       : await sb.from('payments_received').insert(data);
     if (res.error) throw res.error;
-    toast(id ? '更新しました' : '登録しました');
+    toast(id ? 'æ´æ°ãã¾ãã' : 'ç»é²ãã¾ãã');
     closePayModal();
     await reload();
-  } catch(e) { toast('エラー: '+(e.message||e), true); }
+  } catch(e) { toast('ã¨ã©ã¼: '+(e.message||e), true); }
 }
 
 async function deletePayment() {
   const id = document.getElementById('pId').value;
-  if (!id || !confirm('この入金データを削除しますか？')) return;
+  if (!id || !confirm('ãã®å¥éãã¼ã¿ãåé¤ãã¾ããï¼')) return;
   try {
     const res = await sb.from('payments_received').delete().eq('id', id);
     if (res.error) throw res.error;
-    toast('削除しました');
+    toast('åé¤ãã¾ãã');
     closePayModal();
     await reload();
-  } catch(e) { toast('削除エラー: '+(e.message||e), true); }
+  } catch(e) { toast('åé¤ã¨ã©ã¼: '+(e.message||e), true); }
 }
 
 async function reload() {
@@ -524,9 +524,9 @@ function parseCsvFile(file) {
     try {
       const text = e.target.result;
       const lines = text.split('\n').map(l => l.trim()).filter(l => l);
-      if (lines.length < 2) throw new Error('データが不足しています');
+      if (lines.length < 2) throw new Error('ãã¼ã¿ãä¸è¶³ãã¦ãã¾ã');
 
-      // BizSTATION CSV: 日付,摘要,お支払金額,お預り金額,残高,メャ  (typical format)
+      // BizSTATION CSV: æ¥ä»,æè¦,ãæ¯æéé¡,ãé ãéé¡,æ®é«,ã¡ã¢  (typical format)
       // Auto-detect: find the header row and amount columns
       const header = lines[0].split(',');
       csvRows = [];
@@ -545,20 +545,20 @@ function parseCsvFile(file) {
         csvRows.push({ date: dateNorm, payer: payer, amount: credit, memo: cols.length > 5 ? cols[5].replace(/"/g,'').trim() : '' });
       }
 
-      if (!csvRows.length) throw new Error('有効な入金データが見つかりません');
+      if (!csvRows.length) throw new Error('æå¹ãªå¥éãã¼ã¿ãè¦ã¤ããã¾ãã');
 
       // Show preview
-      let prev = '<div class="csv-preview"><table><thead><tr><th>日付</th><th>振込人</th><th style="text-align:right">金額</th><th>メモ</th></tr></thead><tbody>';
+      let prev = '<div class="csv-preview"><table><thead><tr><th>æ¥ä»</th><th>æ¯è¾¼äºº</th><th style="text-align:right">éé¡</th><th>ã¡ã¢</th></tr></thead><tbody>';
       csvRows.forEach(r => {
-        prev += '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.payer)+'</td><td class="amount positive">¥'+r.amount.toLocaleString()+'</td><td style="color:var(--sub);font-size:12px">'+esc(r.memo)+'</td></tr>';
+        prev += '<tr><td>'+esc(r.date)+'</td><td>'+esc(r.payer)+'</td><td class="amount positive">Â¥'+r.amount.toLocaleString()+'</td><td style="color:var(--sub);font-size:12px">'+esc(r.memo)+'</td></tr>';
       });
       prev += '</tbody></table></div>';
       const totalAmt = csvRows.reduce((s,r)=>s+r.amount,0);
-      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-ok">' + csvRows.length + '件の入金データを検出（合計 ¥' + totalAmt.toLocaleString() + '）</div>';
+      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-ok">' + csvRows.length + 'ä»¶ã®å¥éãã¼ã¿ãæ¤åºï¼åè¨ Â¥' + totalAmt.toLocaleString() + 'ï¼</div>';
       document.getElementById('csvPreview').innerHTML = prev;
       document.getElementById('csvActions').style.display = 'block';
     } catch(err) {
-      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-err">パースエラー: ' + err.message + '</div>';
+      document.getElementById('csvResult').innerHTML = '<div class="csv-status csv-err">ãã¼ã¹ã¨ã©ã¼: ' + err.message + '</div>';
       document.getElementById('csvPreview').innerHTML = '';
       document.getElementById('csvActions').style.display = 'none';
     }
@@ -575,7 +575,7 @@ async function importCsv() {
       source_type: 'bizstation',
       record_count: csvRows.length,
       total_amount: csvRows.reduce((s,r)=>s+r.amount, 0),
-      status: '完了'
+      status: 'å®äº'
     }).select('id').single();
     if (batchRes.error) throw batchRes.error;
 
@@ -587,7 +587,7 @@ async function importCsv() {
       payment_date: r.date,
       amount: r.amount,
       payer_name: r.payer,
-      payment_type: '振込',
+      payment_type: 'æ¯è¾¼',
       bank_account_id: defaultBank,
       source: 'csv_import',
       csv_import_id: batchId,
@@ -598,7 +598,7 @@ async function importCsv() {
     const insRes = await sb.from('payments_received').insert(records);
     if (insRes.error) throw insRes.error;
 
-    toast(csvRows.length + '件を取り込みました');
+    toast(csvRows.length + 'ä»¶ãåãè¾¼ã¿ã¾ãã');
     csvRows = [];
     document.getElementById('csvResult').innerHTML = '';
     document.getElementById('csvPreview').innerHTML = '';
@@ -606,7 +606,7 @@ async function importCsv() {
     document.getElementById('csvFile').value = '';
     await reload();
     loadCsvHistory();
-  } catch(e) { toast('取り込みエラー: '+(e.message||e), true); }
+  } catch(e) { toast('åãè¾¼ã¿ã¨ã©ã¼: '+(e.message||e), true); }
 }
 
 function cancelCsv() {
@@ -619,10 +619,10 @@ function cancelCsv() {
 
 async function loadCsvHistory() {
   const res = await sb.from('csv_imports').select('*').order('created_at', { ascending: false }).limit(10);
-  if (res.error || !res.data?.length) { document.getElementById('csvHistory').innerHTML = '<div class="empty">取り込み履歴なし</div>'; return; }
-  let html = '<table><thead><tr><th>取り込み日</th><th>ファイル</th><th>種別</th><th>件数</th><th style="text-align:right">合計金額</th><th>状態</th></tr></thead><tbody>';
+  if (res.error || !res.data?.length) { document.getElementById('csvHistory').innerHTML = '<div class="empty">åãè¾¼ã¿å±¥æ­´ãªã</div>'; return; }
+  let html = '<table><thead><tr><th>åãè¾¼ã¿æ¥</th><th>ãã¡ã¤ã«</th><th>ç¨®å¥</th><th>ä»¶æ°</th><th style="text-align:right">åè¨éé¡</th><th>ç¶æ</th></tr></thead><tbody>';
   res.data.forEach(h => {
-    html += '<tr><td>'+esc(h.created_at?.slice(0,10)||'')+'</td><td>'+esc(h.file_name)+'</td><td>'+esc(h.source_type)+'</td><td>'+h.record_count+'件</td><td class="amount">¥'+(Number(h.total_amount)||0).toLocaleString()+'</td><td>'+esc(h.status)+'</td></tr>';
+    html += '<tr><td>'+esc(h.created_at?.slice(0,10)||'')+'</td><td>'+esc(h.file_name)+'</td><td>'+esc(h.source_type)+'</td><td>'+h.record_count+'ä»¶</td><td class="amount">Â¥'+(Number(h.total_amount)||0).toLocaleString()+'</td><td>'+esc(h.status)+'</td></tr>';
   });
   html += '</tbody></table>';
   document.getElementById('csvHistory').innerHTML = html;
