@@ -1,171 +1,1826 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>asura Portal</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --bg: #0a0a0a; --card: #141414; --card-hover: #1a1a1a;
-    --border: #1e1e1e; --border-hover: #333;
-    --text: #e0e0e0; --text-sub: #888; --text-muted: #555;
-    --accent: #ff4444; --accent-hover: #ee3333;
-    --blue: #4488ff; --green: #44bb44; --orange: #ffa500;
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Hiragino Sans',sans-serif; min-height:100vh; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>asura 経理プラットフォーム</title>
+  <style>
+    :root {
+      --bg: #0d1117; --bg2: #161b22; --bg3: #1c2333; --bg4: #21283b;
+      --border: #30363d; --border2: #3d4450;
+      --text: #e6edf3; --text2: #8b949e; --muted: #6e7681;
+      --primary: #58a6ff; --primary-dim: #1f3a5f;
+      --green: #3fb950; --green-dim: #1a3a2a;
+      --red: #f85149; --red-dim: #3d1a1a;
+      --yellow: #d29922; --yellow-dim: #3d2e0a;
+      --purple: #bc8cff; --purple-dim: #2a1a3d;
+      --orange: #f0883e;
+      --radius: 8px; --radius-lg: 12px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
 
-  /* Header */
-  .header { display:flex; justify-content:space-between; align-items:center; padding:20px 32px; border-bottom:1px solid var(--border); }
-  .header-left { display:flex; align-items:center; gap:14px; }
-  .logo { color:var(--accent); font-size:32px; font-weight:900; letter-spacing:-1px; }
-  .header h1 { font-size:20px; font-weight:400; color:var(--text-sub); }
-  .header-right { display:flex; align-items:center; gap:12px; }
-  .user-badge { display:flex; align-items:center; gap:8px; padding:6px 14px; background:var(--card); border:1px solid var(--border); border-radius:20px; font-size:13px; color:var(--text-sub); }
-  .user-dot { width:8px; height:8px; background:var(--green); border-radius:50%; }
+    /* Header */
+    .header { position: sticky; top: 0; z-index: 100; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .header-left { display: flex; align-items: center; gap: 1rem; }
+    .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
+    .logo-sub { font-size: 0.85rem; color: var(--text2); font-weight: 400; margin-left: 0.5rem; }
+    .header-right { display: flex; align-items: center; gap: 1rem; }
+    .user-badge { background: var(--bg3); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; color: var(--text2); }
+    .invoice-link { background: var(--purple-dim); color: var(--purple); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; text-decoration: none; border: 1px solid rgba(188,140,255,0.3); }
+    .invoice-link:hover { background: rgba(188,140,255,0.2); }
 
-  /* Summary */
-  .summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:16px; padding:24px 32px; }
-  .s-card { background:var(--card); border-radius:14px; padding:24px; border:1px solid var(--border); transition:border-color .2s; }
-  .s-card:hover { border-color:var(--border-hover); }
-  .s-label { font-size:12px; color:var(--text-sub); margin-bottom:10px; text-transform:uppercase; letter-spacing:.5px; }
-  .s-value { font-size:36px; font-weight:700; }
-  .s-value.red { color:var(--accent); }
-  .s-value.blue { color:var(--blue); }
-  .s-sub { font-size:12px; color:var(--text-muted); margin-top:6px; }
+    /* Quick Nav */
+    .quick-nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0.5rem 1.5rem; display: flex; gap: 0.5rem; overflow-x: auto; flex-wrap: wrap; }
+    .nav-link { color: var(--text2); text-decoration: none; font-size: 0.8rem; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.2s; white-space: nowrap; }
+    .nav-link:hover, .nav-link.active { color: var(--primary); background: var(--primary-dim); }
+    .nav-link.alert { color: var(--red); background: var(--red-dim); }
 
-  /* Feature Grid */
-  .section-label { padding:8px 32px 12px; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:2px; font-weight:600; }
-  .features { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:14px; padding:0 32px 40px; }
+    /* Main Container */
+    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
 
-  .f-card { background:var(--card); border-radius:14px; padding:24px; border:1px solid var(--border); position:relative; transition:all .2s; cursor:default; }
-  .f-card.active { cursor:pointer; border-left:4px solid var(--accent); }
-  .f-card.active:hover { border-color:var(--accent); background:var(--card-hover); transform:translateY(-2px); }
-  .f-card.disabled { opacity:.35; }
-  .f-card .icon { font-size:32px; margin-bottom:14px; }
-  .f-card h3 { font-size:16px; font-weight:600; margin-bottom:4px; }
-  .f-card .desc { font-size:13px; color:var(--text-sub); line-height:1.5; }
-  .f-card .badge-soon { position:absolute; top:14px; right:14px; font-size:10px; background:#222; color:var(--text-muted); padding:3px 10px; border-radius:10px; font-weight:500; }
+    /* Alert Banner */
+    .alert-banner { background: linear-gradient(135deg, var(--red-dim), #2a1520); border: 1px solid rgba(248,81,73,0.4); border-radius: var(--radius-lg); padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: none; }
+    .alert-banner.show { display: flex; align-items: center; gap: 1rem; }
+    .alert-badge { background: var(--red); color: #fff; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
+    .alert-text { font-size: 0.9rem; color: var(--text); }
 
-  .f-card .arrow { position:absolute; right:20px; bottom:20px; font-size:18px; color:var(--accent); opacity:0; transition:opacity .2s; }
-  .f-card.active:hover .arrow { opacity:1; }
+    /* Dashboard Grid */
+    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+    .kpi-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem; transition: transform 0.2s; cursor: default; }
+    .kpi-card:hover { transform: translateY(-2px); }
+    .kpi-card .label { font-size: 0.75rem; color: var(--text2); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
+    .kpi-card .value { font-size: 1.5rem; font-weight: 700; }
+    .kpi-card .sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
+    .kpi-card.danger .value { color: var(--red); }
+    .kpi-card.success .value { color: var(--green); }
+    .kpi-card.warning .value { color: var(--yellow); }
 
-  /* Footer */
-  .footer { padding:20px 32px; border-top:1px solid var(--border); text-align:center; font-size:11px; color:var(--text-muted); }
+    /* P&L Summary Row */
+    .pl-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
+    .pl-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem; }
+    .pl-card h4 { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.8rem; }
+    .pl-bar { height: 6px; background: var(--bg4); border-radius: 3px; margin-top: 0.5rem; overflow: hidden; }
+    .pl-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
 
-  @media(max-width:700px) {
-    .header { flex-direction:column; gap:12px; align-items:flex-start; }
-    .summary, .features { grid-template-columns:1fr; }
-    .summary { padding:16px; } .features { padding:0 16px 32px; }
-    .section-label { padding:8px 16px 12px; }
-  }
-</style>
+    /* Section */
+    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; overflow: hidden; }
+    .section-header { padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
+    .section-header:hover { background: var(--bg3); }
+    .section-header-left { display: flex; align-items: center; gap: 0.8rem; }
+    .section-icon { font-size: 1.2rem; }
+    .section-title { font-size: 1rem; font-weight: 600; }
+    .section-badge { background: var(--primary-dim); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; }
+    .section-actions { display: flex; gap: 0.5rem; }
+    .section-content { padding: 1rem 1.5rem; }
+    .section-content.collapsed { display: none; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; background: var(--bg); border-radius: var(--radius); padding: 0.25rem; }
+    .tab-btn { background: none; border: none; color: var(--text2); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
+    .tab-btn.active { background: var(--bg3); color: var(--text); }
+    .tab-btn:hover { color: var(--text); }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* Buttons */
+    .btn { border: none; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #4090e0; }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--bg4); }
+    .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+    .btn-danger:hover { background: rgba(248,81,73,0.2); }
+    .btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+    .btn-success:hover { background: rgba(63,185,80,0.2); }
+    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
+    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0.3rem; border-radius: 4px; transition: background 0.2s; }
+    .btn-icon:hover { background: var(--bg4); }
+
+    /* Search & Filter Bar */
+    .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
+    .search-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.8rem; border-radius: var(--radius); font-size: 0.8rem; flex: 1; min-width: 200px; }
+    .search-input:focus { outline: none; border-color: var(--primary); }
+    .filter-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: var(--radius); font-size: 0.8rem; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+    th { text-align: left; padding: 0.6rem 0.8rem; color: var(--text2); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
+    tr:hover { background: var(--bg3); }
+    .empty-state { text-align: center; color: var(--muted); padding: 2rem !important; }
+    .action-btns { display: flex; gap: 0.3rem; }
+
+    /* Badges */
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
+    .badge-blue { background: var(--primary-dim); color: var(--primary); }
+    .badge-green { background: var(--green-dim); color: var(--green); }
+    .badge-red { background: var(--red-dim); color: var(--red); }
+    .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
+    .badge-purple { background: var(--purple-dim); color: var(--purple); }
+    .badge-gray { background: var(--bg4); color: var(--text2); }
+
+    /* Modal */
+    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: flex-start; padding: 3rem 1rem; overflow-y: auto; }
+    .modal-overlay.show { display: flex; }
+    .modal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 640px; }
+    .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+    .modal-header-title { font-size: 1rem; font-weight: 600; }
+    .modal-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.2rem; }
+    .modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
+    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+
+    /* Form */
+    .form-group { margin-bottom: 1rem; }
+    .form-label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; }
+    .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.8rem; border-radius: var(--radius); font-size: 0.85rem; }
+    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
+    .form-textarea { min-height: 80px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+
+    /* Line Items */
+    .line-items { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
+    .line-item { display: grid; grid-template-columns: 2fr 80px 60px 100px 100px 40px; gap: 0.5rem; padding: 0.5rem; align-items: center; border-bottom: 1px solid var(--border); }
+    .line-item:last-child { border-bottom: none; }
+    .line-item input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.4rem; border-radius: 4px; font-size: 0.8rem; width: 100%; }
+    .line-item-amount { text-align: right; font-size: 0.8rem; color: var(--text2); }
+    .line-item-remove { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
+
+    /* Totals */
+    .totals { background: var(--bg3); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
+    .total-row { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.85rem; }
+    .total-row.grand { font-size: 1.1rem; font-weight: 700; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.3rem; }
+
+    /* Drag & Drop */
+    .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 2rem; text-align: center; color: var(--muted); cursor: pointer; transition: all 0.3s; }
+    .drop-zone:hover, .drop-zone.active { border-color: var(--primary); background: var(--primary-dim); color: var(--primary); }
+
+    /* Toast */
+    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.5rem; border-radius: var(--radius); z-index: 300; font-size: 0.85rem; animation: slideIn 0.3s ease; }
+    .toast.success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
+    .toast.error { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
+    @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* Export Panel */
+    .export-panel { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+    .export-option { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: var(--radius); cursor: pointer; transition: background 0.2s; }
+    .export-option:hover { background: var(--bg4); }
+    .export-icon { font-size: 1.5rem; }
+    .export-info h5 { font-size: 0.85rem; }
+    .export-info p { font-size: 0.75rem; color: var(--text2); }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+      .pl-row { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+      .line-item { grid-template-columns: 1fr 1fr; }
+      .header { flex-wrap: wrap; gap: 0.5rem; }
+    }
+  </style>
 </head>
 <body>
 
-<div class="header">
-  <div class="header-left">
-    <span class="logo">asura</span>
-    <h1>Portal</h1>
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">asura<span class="logo-sub">経理プラットフォーム</span></div>
+    </div>
+    <div class="header-right">
+      <a href="https://asura-invoice-manager.vercel.app" target="_blank" class="invoice-link">📤 Invoice Manager（支払管理）</a>
+      <div class="user-badge" id="userName">Admin</div>
+    </div>
   </div>
-  <div class="header-right">
-    <div class="user-badge"><span class="user-dot"></span><span id="userName">-</span></div>
-  </div>
-</div>
 
-<div class="summary">
-  <div class="s-card">
-    <div class="s-label">進行中 JOB</div>
-    <div class="s-value red" id="activeCount">-</div>
-    <div class="s-sub">現在アクティブな案件</div>
+  <!-- Quick Nav -->
+  <div class="quick-nav">
+    <a class="nav-link active" onclick="scrollTo('dashboardSection')">📊 ダッシュボード</a>
+    <a class="nav-link" onclick="scrollTo('jobsSection')">💼 JOB管理</a>
+    <a class="nav-link" onclick="scrollTo('clientsSection')">🏢 クライアント</a>
+    <a class="nav-link" onclick="scrollTo('estimatesSection')">📝 見積管理</a>
+    <a class="nav-link" onclick="scrollTo('invoicesSection')">📄 請求書発行</a>
+    <a class="nav-link" onclick="scrollTo('paymentsSection')">💰 入金管理</a>
+    <a class="nav-link" onclick="scrollTo('expensesSection')">💳 経費管理</a>
+    <a class="nav-link" onclick="scrollTo('exportSection')">📤 MFエクスポート</a>
+    <a class="nav-link alert" id="alertNav" style="display:none" onclick="scrollTo('dashboardSection')">🚨 アラート <span id="alertNavCount"></span></a>
   </div>
-  <div class="s-card">
-    <div class="s-label">全JOB数</div>
-    <div class="s-value blue" id="totalCount">-</div>
-    <div class="s-sub">登録済み案件数</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">今月の売上</div>
-    <div class="s-value">¥0</div>
-    <div class="s-sub">Phase 3で実装予定</div>
-  </div>
-  <div class="s-card">
-    <div class="s-label">未請求案件</div>
-    <div class="s-value">0</div>
-    <div class="s-sub">Phase 3で実装予定</div>
-  </div>
-</div>
 
-<div class="section-label">機能メニュー</div>
+  <div class="container">
 
-<div class="features">
-  <div class="f-card active" onclick="location.href='job-master.html'">
-    <div class="icon">📋</div>
-    <h3>JOBマスター</h3>
-    <div class="desc">案件の登録・編集・検索。ステータス管理、担当者アサイン、期間設定。</div>
-    <span class="arrow">→</span>
-  </div>
-  <div class="f-card active" onclick="location.href='partners.html'">
-    <div class="icon">🏢</div>
-    <h3>取引先マスター</h3>
-    <div class="desc">クライアント・パートナーの登録管理。支払サイト・源泉徴収設定。</div>
-    <span class="arrow">→</span>
-  </div>
-  <div class="f-card active" onclick="location.href='estimate.html'">
-    <div class="icon">📝</div>
-    <h3>見積管理</h3>
-    <div class="desc">見積書の作成・PDF出力。JOBとの紐付け管理。</div>
-    <span class="arrow">→</span>
-  </div>
-  <div class="f-card disabled">
-    <span class="badge-soon">Phase 2</span>
-    <div class="icon">💰</div>
-    <h3>予算管理</h3>
-    <div class="desc">JOB別の予算設定と実績対比。利益率モニタリング。</div>
-  </div>
-  <div class="f-card disabled">
-    <span class="badge-soon">Phase 2</span>
-    <div class="icon">🧾</div>
-    <h3>経費入力</h3>
-    <div class="desc">経費の登録・JOB紐付け。レシート管理。</div>
-  </div>
-  <div class="f-card disabled">
-    <span class="badge-soon">Phase 3</span>
-    <div class="icon">📄</div>
-    <h3>売上請求</h3>
-    <div class="desc">請求書の発行・送付管理。入金ステータス追跡。</div>
-  </div>
-  <div class="f-card active" onclick="location.href='payment.html'">
-    <div class="icon">💳</div>
-    <h3>入金管理</h3>
-    <div class="desc">入金登録・CSV取込・手形台帳・消込管理。BizSTATION連携対応。</div>
-    <span class="arrow">→</span>
-  </div>
-</div>
+    <!-- Alert Banner -->
+    <div class="alert-banner" id="alertBanner">
+      <span class="alert-badge" id="alertBadgeCount">0件</span>
+      <span class="alert-text" id="alertText">期限超過の請求書があります</span>
+    </div>
 
-<div class="footer">asura Portal v0.2 &mdash; Phase 2</div>
+    <!-- ===== DASHBOARD (傘) ===== -->
+    <div id="dashboardSection">
+      <!-- KPI Cards -->
+      <div class="dashboard-grid">
+        <div class="kpi-card"><div class="label">📈 月次売上</div><div class="value" id="kpiRevenue">¥0</div><div class="sub">発行済み請求書合計</div></div>
+        <div class="kpi-card"><div class="label">📉 月次外注費</div><div class="value" id="kpiCost">¥0</div><div class="sub">Invoice Manager連携</div></div>
+        <div class="kpi-card"><div class="label">💳 月次経費</div><div class="value" id="kpiExpense">¥0</div><div class="sub">Amex + 固定費</div></div>
+        <div class="kpi-card success"><div class="label">💹 粗利</div><div class="value" id="kpiProfit">¥0</div><div class="sub" id="kpiProfitRate">粗利率 --%</div></div>
+        <div class="kpi-card warning"><div class="label">⏳ 未回収残高</div><div class="value" id="kpiUnpaid">¥0</div><div class="sub" id="kpiUnpaidCount">0件</div></div>
+        <div class="kpi-card danger" id="kpiOverdueCard" style="display:none"><div class="label">🚨 期限超過</div><div class="value" id="kpiOverdue">0件</div><div class="sub">要対応！</div></div>
+        <div class="kpi-card"><div class="label">💼 進行中JOB</div><div class="value" id="kpiActiveJobs">0</div><div class="sub" id="kpiTotalJobs">全0件</div></div>
+        <div class="kpi-card"><div class="label">🏢 取引先数</div><div class="value" id="kpiClientCount">0</div><div class="sub">クライアント</div></div>
+      </div>
 
-<script>
-const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      <!-- P&L Summary -->
+      <div class="pl-row">
+        <div class="pl-card">
+          <h4>売上（入口）</h4>
+          <div class="value" id="plRevenue" style="font-size:1.3rem;font-weight:700;color:var(--green)">¥0</div>
+          <div class="pl-bar"><div class="pl-bar-fill" id="plRevenueBar" style="width:0%;background:var(--green)"></div></div>
+        </div>
+        <div class="pl-card">
+          <h4>支出（出口）</h4>
+          <div class="value" id="plExpenseTotal" style="font-size:1.3rem;font-weight:700;color:var(--red)">¥0</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:0.3rem">外注: <span id="plCostPart">¥0</span> / 経費: <span id="plExpensePart">¥0</span></div>
+          <div class="pl-bar"><div class="pl-bar-fill" id="plExpenseBar" style="width:0%;background:var(--red)"></div></div>
+        </div>
+        <div class="pl-card">
+          <h4>営業利益</h4>
+          <div class="value" id="plNetProfit" style="font-size:1.3rem;font-weight:700">¥0</div>
+          <div style="font-size:0.75rem;color:var(--text2);margin-top:0.3rem">利益率: <span id="plNetRate">--%</span></div>
+          <div class="pl-bar"><div class="pl-bar-fill" id="plNetBar" style="width:0%;background:var(--primary)"></div></div>
+        </div>
+      </div>
+    </div>
 
-async function load() {
-  try {
-    const [active, total, staffRes] = await Promise.all([
-      sb.from('jobs').select('*', { count:'exact', head:true }).eq('status','進行中'),
-      sb.from('jobs').select('*', { count:'exact', head:true }),
-      sb.from('staff_members').select('name').limit(1)
-    ]);
-    document.getElementById('activeCount').textContent = active.count || 0;
-    document.getElementById('totalCount').textContent = total.count || 0;
-    if (staffRes.data && staffRes.data[0]) {
-      document.getElementById('userName').textContent = staffRes.data[0].name;
+    <!-- ===== JOB管理 ===== -->
+    <div class="section" id="jobsSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">💼</span>
+          <span class="section-title">JOB管理</span>
+          <span class="section-badge" id="jobsBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openJobModal()">＋ 新規JOB</button>
+        </div>
+      </div>
+      <div class="section-content" id="jobsContent">
+        <div class="toolbar">
+          <input type="text" class="search-input" id="jobsSearch" placeholder="JOB番号・案件名で検索...">
+          <select class="filter-select" id="jobsStatusFilter" onchange="renderJobs()">
+            <option value="">全ステータス</option>
+            <option value="active">進行中</option>
+            <option value="completed">完了</option>
+            <option value="cancelled">中止</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>JOB番号</th><th>案件名</th><th>クライアント</th><th>売上</th><th>外注費</th><th>粗利</th><th>ステータス</th><th>担当</th><th>操作</th></tr></thead>
+            <tbody id="jobsTableBody"><tr><td colspan="9" class="empty-state">読込中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== クライアントマスター ===== -->
+    <div class="section" id="clientsSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">🏢</span>
+          <span class="section-title">クライアントマスター</span>
+          <span class="section-badge" id="clientsBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openClientModal()">＋ 新規</button>
+        </div>
+      </div>
+      <div class="section-content" id="clientsContent">
+        <div class="toolbar">
+          <input type="text" class="search-input" id="clientsSearch" placeholder="クライアント名で検索...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>クライアント名</th><th>担当者</th><th>支払条件</th><th>売上合計</th><th>未回収</th><th>操作</th></tr></thead>
+            <tbody id="clientsTableBody"><tr><td colspan="6" class="empty-state">読込中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 見積管理 ===== -->
+    <div class="section" id="estimatesSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">📝</span>
+          <span class="section-title">見積管理</span>
+          <span class="section-badge" id="estimatesBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openEstimateModal()">＋ 新規見積</button>
+        </div>
+      </div>
+      <div class="section-content" id="estimatesContent">
+        <div class="toolbar">
+          <input type="text" class="search-input" id="estimatesSearch" placeholder="見積番号・件名で検索...">
+          <select class="filter-select" id="estimatesStatusFilter" onchange="renderEstimates()">
+            <option value="">全ステータス</option>
+            <option value="draft">下書き</option>
+            <option value="sent">送付済</option>
+            <option value="approved">承認</option>
+            <option value="rejected">却下</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>見積番号</th><th>件名</th><th>クライアント</th><th>金額(税抜)</th><th>ステータス</th><th>有効期限</th><th>操作</th></tr></thead>
+            <tbody id="estimatesTableBody"><tr><td colspan="7" class="empty-state">読込中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 請求書発行 ===== -->
+    <div class="section" id="invoicesSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">📄</span>
+          <span class="section-title">請求書発行（売上側）</span>
+          <span class="section-badge" id="invoicesBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openInvoiceModal()">＋ 新規請求書</button>
+        </div>
+      </div>
+      <div class="section-content" id="invoicesContent">
+        <div class="toolbar">
+          <input type="text" class="search-input" id="invoicesSearch" placeholder="請求書番号・クライアント名で検索...">
+          <select class="filter-select" id="invoicesStatusFilter" onchange="renderInvoices()">
+            <option value="">全ステータス</option>
+            <option value="draft">下書き</option>
+            <option value="sent">送付済</option>
+            <option value="paid">入金済</option>
+            <option value="overdue">期限超過</option>
+          </select>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>請求番号</th><th>JOB</th><th>クライアント</th><th>請求額(税込)</th><th>発行日</th><th>支払期日</th><th>ステータス</th><th>操作</th></tr></thead>
+            <tbody id="invoicesTableBody"><tr><td colspan="8" class="empty-state">読込中...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 入金管理 ===== -->
+    <div class="section" id="paymentsSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">💰</span>
+          <span class="section-title">入金管理</span>
+          <span class="section-badge" id="paymentsBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPaymentModal()">＋ 新規入金</button>
+        </div>
+      </div>
+      <div class="section-content" id="paymentsContent">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchPaymentTab('list',this)">入金一覧</button>
+          <button class="tab-btn" onclick="switchPaymentTab('csv',this)">UFJ CSV取込</button>
+          <button class="tab-btn" onclick="switchPaymentTab('matching',this)">自動消込</button>
+        </div>
+        <div id="payments-list" class="tab-content active">
+          <div class="toolbar">
+            <input type="text" class="search-input" id="paymentsSearch" placeholder="振込人名・クライアント名で検索...">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>入金日</th><th>振込人</th><th>金額</th><th>対象請求書</th><th>消込</th><th>操作</th></tr></thead>
+              <tbody id="paymentsTableBody"><tr><td colspan="6" class="empty-state">読込中...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="payments-csv" class="tab-content">
+          <div class="drop-zone" id="ufjDropZone" onclick="document.getElementById('ufjFileInput').click()" ondrop="handleUFJDrop(event)" ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')">
+            📁 UFJ入出金明細CSVをドラッグ＆ドロップ<br><span style="font-size:0.8rem">またはクリックして選択</span>
+            <input type="file" id="ufjFileInput" style="display:none" accept=".csv" onchange="handleUFJFile(event)">
+          </div>
+          <div id="ufjPreview" style="display:none;margin-top:1rem"></div>
+        </div>
+        <div id="payments-matching" class="tab-content">
+          <div id="matchingResults"><p class="empty-state">CSVを取り込むと自動マッチング結果が表示されます</p></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== 経費管理 ===== -->
+    <div class="section" id="expensesSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">💳</span>
+          <span class="section-title">経費管理</span>
+          <span class="section-badge" id="expensesBadge">0</span>
+        </div>
+        <div class="section-actions">
+          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openExpenseModal()">＋ 新規経費</button>
+        </div>
+      </div>
+      <div class="section-content" id="expensesContent">
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchExpenseTab('list',this)">経費一覧</button>
+          <button class="tab-btn" onclick="switchExpenseTab('amex',this)">Amex CSV取込</button>
+          <button class="tab-btn" onclick="switchExpenseTab('categories',this)">カテゴリマスター</button>
+        </div>
+        <div id="expenses-list" class="tab-content active">
+          <div class="toolbar">
+            <input type="text" class="search-input" id="expensesSearch" placeholder="支払先・カテゴリで検索...">
+            <select class="filter-select" id="expensesCategoryFilter" onchange="renderExpenses()">
+              <option value="">全カテゴリ</option>
+              <option value="家賃">家賃</option>
+              <option value="通信費">通信費</option>
+              <option value="ソフトウェア">ソフトウェア</option>
+              <option value="交通費">交通費</option>
+              <option value="会議費">会議費</option>
+              <option value="接待交際費">接待交際費</option>
+              <option value="消耗品費">消耗品費</option>
+              <option value="その他">その他</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>日付</th><th>カテゴリ</th><th>支払先</th><th>金額</th><th>支払方法</th><th>JOB</th><th>MF</th><th>操作</th></tr></thead>
+              <tbody id="expensesTableBody"><tr><td colspan="8" class="empty-state">読込中...</td></tr></tbody>
+            </table>
+          </div>
+        </div>
+        <div id="expenses-amex" class="tab-content">
+          <div class="drop-zone" id="amexDropZone" onclick="document.getElementById('amexFileInput').click()" ondrop="handleAmexDrop(event)" ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')">
+            💳 Amex利用明細CSVをドラッグ＆ドロップ<br><span style="font-size:0.8rem">またはクリックして選択</span>
+            <input type="file" id="amexFileInput" style="display:none" accept=".csv" onchange="handleAmexFile(event)">
+          </div>
+          <div id="amexPreview" style="display:none;margin-top:1rem"></div>
+        </div>
+        <div id="expenses-categories" class="tab-content">
+          <p style="color:var(--text2);font-size:0.85rem;margin-bottom:1rem">加盟店名とカテゴリの紐付けを登録すると、次回CSVインポート時に自動分類されます。</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>加盟店名（パターン）</th><th>カテゴリ</th><th>操作</th></tr></thead>
+              <tbody id="categoryMasterBody"><tr><td colspan="3" class="empty-state">カテゴリマスター未登録</td></tr></tbody>
+            </table>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="addCategoryRule()" style="margin-top:0.5rem">＋ ルール追加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MFエクスポート ===== -->
+    <div class="section" id="exportSection">
+      <div class="section-header" onclick="toggleSection(this)">
+        <div class="section-header-left">
+          <span class="section-icon">📤</span>
+          <span class="section-title">MoneyForwardエクスポート</span>
+        </div>
+      </div>
+      <div class="section-content" id="exportContent">
+        <p style="color:var(--text2);font-size:0.85rem;margin-bottom:1.5rem">MoneyForward仕訳帳インポート形式でCSVをエクスポートします。Besoさんへの共有用。</p>
+        <div class="form-row" style="margin-bottom:1rem">
+          <div class="form-group">
+            <label class="form-label">対象月</label>
+            <input type="month" class="form-input" id="exportMonth">
+          </div>
+          <div class="form-group">
+            <label class="form-label">エクスポート対象</label>
+            <div style="display:flex;gap:1rem;margin-top:0.3rem">
+              <label class="form-check"><input type="checkbox" id="exportRevenue" checked> 売上（請求書）</label>
+              <label class="form-check"><input type="checkbox" id="exportCost" checked> 外注費</label>
+              <label class="form-check"><input type="checkbox" id="exportExpenses" checked> 経費</label>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          <button class="btn btn-primary" onclick="exportMFCSV()">📥 CSVエクスポート</button>
+          <button class="btn btn-secondary" onclick="previewMFCSV()">👁 プレビュー</button>
+        </div>
+        <div id="mfPreview" style="display:none;margin-top:1rem"></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- Job Modal -->
+  <div class="modal-overlay" id="jobModal" onclick="if(event.target===this)closeModal('jobModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="jobModalTitle">新規 JOB</div><button class="modal-close" onclick="closeModal('jobModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">JOB番号 *</label><input type="text" class="form-input" id="jobNumber" placeholder="JOB-2026-001"></div>
+        <div class="form-group"><label class="form-label">案件名 *</label><input type="text" class="form-input" id="jobTitle"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="jobClient"></select></div>
+          <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="jobStaff"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">売上額（税抜）</label><input type="number" class="form-input" id="jobRevenue" min="0"></div>
+          <div class="form-group"><label class="form-label">外注予算</label><input type="number" class="form-input" id="jobBudget" min="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="jobStatus"><option value="active">進行中</option><option value="completed">完了</option><option value="cancelled">中止</option></select></div>
+          <div class="form-group"><label class="form-label">元見積</label><select class="form-select" id="jobEstimate"><option value="">なし</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">開始日</label><input type="date" class="form-input" id="jobStartDate"></div>
+          <div class="form-group"><label class="form-label">終了日</label><input type="date" class="form-input" id="jobEndDate"></div>
+        </div>
+        <div class="form-group"><label class="form-label">説明</label><textarea class="form-textarea" id="jobDescription"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="jobDeleteBtn" style="display:none;margin-right:auto" onclick="deleteJob()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('jobModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveJob()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Modal -->
+  <div class="modal-overlay" id="clientModal" onclick="if(event.target===this)closeModal('clientModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="clientModalTitle">新規 クライアント</div><button class="modal-close" onclick="closeModal('clientModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-group"><label class="form-label">クライアント名 *</label><input type="text" class="form-input" id="clientName"></div>
+        <div class="form-group"><label class="form-label">短縮名</label><input type="text" class="form-input" id="clientNameShort" placeholder="○○社"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">担当者名</label><input type="text" class="form-input" id="clientContact"></div>
+          <div class="form-group"><label class="form-label">メール</label><input type="email" class="form-input" id="clientEmail"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">電話番号</label><input type="tel" class="form-input" id="clientPhone"></div>
+          <div class="form-group"><label class="form-label">支払条件</label><input type="text" class="form-input" id="clientPaymentTerms" placeholder="月末締め翌月末払い"></div>
+        </div>
+        <div class="form-group"><label class="form-label">住所</label><input type="text" class="form-input" id="clientAddress"></div>
+        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="clientNotes"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="clientDeleteBtn" style="display:none;margin-right:auto" onclick="deleteClient()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('clientModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveClient()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Estimate Modal -->
+  <div class="modal-overlay" id="estimateModal" onclick="if(event.target===this)closeModal('estimateModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="estimateModalTitle">新規 見積</div><button class="modal-close" onclick="closeModal('estimateModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">見積番号 *</label><input type="text" class="form-input" id="estNumber" placeholder="EST-2026-001"></div>
+          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="estStatus"><option value="draft">下書き</option><option value="sent">送付済</option><option value="approved">承認</option><option value="rejected">却下</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">件名 *</label><input type="text" class="form-input" id="estTitle"></div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="estClient"></select></div>
+          <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="estStaff"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">金額（税抜）*</label><input type="number" class="form-input" id="estAmount" min="0"></div>
+          <div class="form-group"><label class="form-label">税率</label><select class="form-select" id="estTaxRate"><option value="0.10">10%</option><option value="0.08">8%</option><option value="0">非課税</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">有効期限</label><input type="date" class="form-input" id="estValidUntil"></div>
+        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="estNotes"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" id="estToJobBtn" style="display:none;margin-right:auto" onclick="convertEstimateToJob()">→ JOB化</button>
+        <button class="btn btn-danger" id="estDeleteBtn" style="display:none" onclick="deleteEstimate()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('estimateModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveEstimate()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice Modal -->
+  <div class="modal-overlay" id="invoiceModal" onclick="if(event.target===this)closeModal('invoiceModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="invoiceModalTitle">新規 請求書</div><button class="modal-close" onclick="closeModal('invoiceModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">請求書番号 *</label><input type="text" class="form-input" id="invNumber" placeholder="INV-2026-001"></div>
+          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="invStatus"><option value="draft">下書き</option><option value="sent">送付済</option><option value="paid">入金済</option><option value="overdue">期限超過</option></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">JOB</label><select class="form-select" id="invJob"></select></div>
+          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="invClient"></select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">請求額（税抜）*</label><input type="number" class="form-input" id="invAmount" min="0"></div>
+          <div class="form-group"><label class="form-label">消費税</label><input type="number" class="form-input" id="invTax" min="0" readonly style="background:var(--bg3)"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">発行日 *</label><input type="date" class="form-input" id="invIssueDate"></div>
+          <div class="form-group"><label class="form-label">支払期日 *</label><input type="date" class="form-input" id="invDueDate"></div>
+        </div>
+        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="invNotes"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="invDeleteBtn" style="display:none;margin-right:auto" onclick="deleteInvoice()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('invoiceModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveInvoice()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Payment Modal -->
+  <div class="modal-overlay" id="paymentModal" onclick="if(event.target===this)closeModal('paymentModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="paymentModalTitle">新規 入金</div><button class="modal-close" onclick="closeModal('paymentModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">入金日 *</label><input type="date" class="form-input" id="payDate"></div>
+          <div class="form-group"><label class="form-label">金額 *</label><input type="number" class="form-input" id="payAmount" min="0"></div>
+        </div>
+        <div class="form-group"><label class="form-label">対象請求書</label><select class="form-select" id="payInvoice"><option value="">選択...</option></select></div>
+        <div class="form-group"><label class="form-label">UFJ参照番号</label><input type="text" class="form-input" id="payBankRef"></div>
+        <div class="form-group"><label class="form-label">消込方法</label><select class="form-select" id="payMatchMethod"><option value="manual">手動</option><option value="auto">自動（CSV）</option></select></div>
+        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="payNotes"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="payDeleteBtn" style="display:none;margin-right:auto" onclick="deletePayment()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('paymentModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="savePayment()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Expense Modal -->
+  <div class="modal-overlay" id="expenseModal" onclick="if(event.target===this)closeModal('expenseModal')">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <div class="modal-header"><div class="modal-header-title" id="expenseModalTitle">新規 経費</div><button class="modal-close" onclick="closeModal('expenseModal')">✕</button></div>
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">発生日 *</label><input type="date" class="form-input" id="expDate"></div>
+          <div class="form-group"><label class="form-label">カテゴリ *</label><select class="form-select" id="expCategory">
+            <option value="">選択...</option><option value="家賃">家賃</option><option value="通信費">通信費</option><option value="ソフトウェア">ソフトウェア</option><option value="交通費">交通費</option><option value="会議費">会議費</option><option value="接待交際費">接待交際費</option><option value="消耗品費">消耗品費</option><option value="その他">その他</option>
+          </select></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">支払先</label><input type="text" class="form-input" id="expVendor"></div>
+          <div class="form-group"><label class="form-label">金額（税込）*</label><input type="number" class="form-input" id="expAmount" min="0"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">支払方法</label><select class="form-select" id="expPayMethod"><option value="amex">Amexカード</option><option value="bank_transfer">銀行振込</option><option value="cash">現金</option></select></div>
+          <div class="form-group"><label class="form-label">JOB紐付き</label><select class="form-select" id="expJob"><option value="">なし</option></select></div>
+        </div>
+        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="expNotes"></textarea></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-danger" id="expDeleteBtn" style="display:none;margin-right:auto" onclick="deleteExpense()">削除</button>
+        <button class="btn btn-secondary" onclick="closeModal('expenseModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveExpense()">保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== Configuration =====
+    const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
+
+    // ===== Global State =====
+    let clients = [], jobs = [], estimates = [], invoicesIssued = [], paymentsReceived = [], expenses = [];
+    let staffMembers = [];
+    let editingId = null;
+    let categoryRules = JSON.parse(localStorage.getItem('categoryRules') || '[]');
+
+    // ===== Utility Functions =====
+    function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+    function fmt(n) { return '¥' + Number(n || 0).toLocaleString('ja-JP'); }
+    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('ja-JP') : ''; }
+    function today() { return new Date().toISOString().split('T')[0]; }
+
+    function showToast(msg, type = 'success') {
+      const t = document.createElement('div');
+      t.className = `toast ${type}`;
+      t.textContent = msg;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 3000);
     }
-  } catch(e) { console.error(e); }
-}
-load();
-</script>
+
+    // ===== Supabase REST API =====
+    const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+
+    async function sbFetch(table, opts = {}) {
+      let url = `${SUPABASE_URL}/rest/v1/${table}?`;
+      if (opts.select) url += `select=${opts.select}&`;
+      if (opts.filter) url += `${opts.filter}&`;
+      if (opts.order) url += `order=${opts.order}&`;
+      try {
+        const r = await fetch(url, { headers });
+        return r.ok ? await r.json() : [];
+      } catch(e) { console.error(`Fetch ${table}:`, e); return []; }
+    }
+
+    async function sbInsert(table, data) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+          method: 'POST', headers: { ...headers, 'Prefer': 'return=representation' },
+          body: JSON.stringify(data)
+        });
+        return r.ok ? await r.json() : null;
+      } catch(e) { console.error('Insert error:', e); return null; }
+    }
+
+    async function sbUpdate(table, id, data) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+          method: 'PATCH', headers, body: JSON.stringify(data)
+        });
+        return r.ok;
+      } catch(e) { console.error('Update error:', e); return false; }
+    }
+
+    async function sbDelete(table, id) {
+      try {
+        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers });
+        return r.ok;
+      } catch(e) { console.error('Delete error:', e); return false; }
+    }
+
+    // ===== Section Toggle =====
+    function toggleSection(header) {
+      const content = header.nextElementSibling;
+      content.classList.toggle('collapsed');
+    }
+
+    function scrollTo(id) {
+      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
+      event?.target?.classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('show'); editingId = null; }
+
+    // ===== Badge Helpers =====
+    function statusBadge(status) {
+      const map = {
+        'active': 'blue', '進行中': 'blue', 'draft': 'gray', '下書き': 'gray',
+        'sent': 'yellow', '送付済': 'yellow', 'approved': 'green', '承認': 'green',
+        'completed': 'green', '完了': 'green', 'paid': 'green', '入金済': 'green',
+        'rejected': 'red', '却下': 'red', 'overdue': 'red', '期限超過': 'red',
+        'cancelled': 'red', '中止': 'red',
+      };
+      const label = { 'active': '進行中', 'completed': '完了', 'cancelled': '中止', 'draft': '下書き', 'sent': '送付済', 'approved': '承認', 'rejected': '却下', 'paid': '入金済', 'overdue': '期限超過' };
+      return `<span class="badge badge-${map[status]||'gray'}">${esc(label[status]||status)}</span>`;
+    }
+
+    // ===== CLIENT FUNCTIONS =====
+    async function loadClients() {
+      // Use partners table with is_client flag
+      clients = await sbFetch('partners', { order: 'created_at.desc', filter: 'is_client=eq.true' });
+      renderClients();
+      updateClientDropdowns();
+    }
+
+    function renderClients() {
+      const tbody = document.getElementById('clientsTableBody');
+      const search = (document.getElementById('clientsSearch').value || '').toLowerCase();
+      let filtered = clients.filter(c => !search || (c.name && c.name.toLowerCase().includes(search)));
+
+      document.getElementById('clientsBadge').textContent = clients.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(c => {
+        const revenue = invoicesIssued.filter(i => i.client_id === c.id && i.status === 'paid').reduce((s, i) => s + (i.amount_ex_tax || 0), 0);
+        const unpaid = invoicesIssued.filter(i => i.client_id === c.id && i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + (i.amount_ex_tax || 0), 0);
+        return `<tr>
+          <td><strong>${esc(c.name)}</strong></td>
+          <td>${esc(c.contact_name || c.name_kana || '-')}</td>
+          <td>${esc(c.payment_terms || '-')}</td>
+          <td>${fmt(revenue)}</td>
+          <td>${unpaid > 0 ? `<span style="color:var(--yellow)">${fmt(unpaid)}</span>` : '-'}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openClientModal('${c.id}')">✏️</button>
+            <button class="btn-icon" onclick="deleteClientById('${c.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openClientModal(id = null) {
+      editingId = id;
+      ['clientName','clientNameShort','clientContact','clientEmail','clientPhone','clientPaymentTerms','clientAddress','clientNotes'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('clientDeleteBtn').style.display = 'none';
+      document.getElementById('clientModalTitle').textContent = '新規 クライアント';
+
+      if (id) {
+        const c = clients.find(x => x.id === id);
+        if (c) {
+          document.getElementById('clientModalTitle').textContent = 'クライアント編集';
+          document.getElementById('clientName').value = c.name || '';
+          document.getElementById('clientNameShort').value = c.name_short || c.name_kana || '';
+          document.getElementById('clientContact').value = c.contact_name || '';
+          document.getElementById('clientEmail').value = c.email || '';
+          document.getElementById('clientPhone').value = c.tel || c.contact_phone || '';
+          document.getElementById('clientPaymentTerms').value = c.payment_terms || '';
+          document.getElementById('clientAddress').value = c.address || '';
+          document.getElementById('clientNotes').value = c.notes || '';
+          document.getElementById('clientDeleteBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('clientModal').classList.add('show');
+    }
+
+    async function saveClient() {
+      const name = document.getElementById('clientName').value.trim();
+      if (!name) { showToast('クライアント名は必須です', 'error'); return; }
+
+      const data = {
+        name, is_client: true,
+        name_kana: document.getElementById('clientNameShort').value.trim() || null,
+        contact_name: document.getElementById('clientContact').value.trim() || null,
+        email: document.getElementById('clientEmail').value.trim() || null,
+        tel: document.getElementById('clientPhone').value.trim() || null,
+        payment_terms: document.getElementById('clientPaymentTerms').value.trim() || null,
+        address: document.getElementById('clientAddress').value.trim() || null,
+        notes: document.getElementById('clientNotes').value.trim() || null,
+      };
+
+      const ok = editingId ? await sbUpdate('partners', editingId, data) : (await sbInsert('partners', data)) !== null;
+      if (ok) { showToast('保存しました'); closeModal('clientModal'); loadClients(); }
+      else showToast('保存に失敗しました', 'error');
+    }
+
+    async function deleteClientById(id) {
+      if (confirm('このクライアントを削除しますか？')) {
+        if (await sbDelete('partners', id)) { showToast('削除しました'); loadClients(); }
+        else showToast('削除に失敗しました', 'error');
+      }
+    }
+    function deleteClient() { if (editingId) deleteClientById(editingId).then(() => closeModal('clientModal')); }
+
+    // ===== JOB FUNCTIONS =====
+    async function loadJobs() {
+      jobs = await sbFetch('jobs', { order: 'created_at.desc' });
+      renderJobs();
+      updateJobDropdowns();
+    }
+
+    function renderJobs() {
+      const tbody = document.getElementById('jobsTableBody');
+      const search = (document.getElementById('jobsSearch').value || '').toLowerCase();
+      const statusF = document.getElementById('jobsStatusFilter').value;
+      let filtered = jobs.filter(j => {
+        const ms = !search || (j.job_code||j.job_number||'').toLowerCase().includes(search) || (j.title||'').toLowerCase().includes(search);
+        const mst = !statusF || j.status === statusF;
+        return ms && mst;
+      });
+
+      document.getElementById('jobsBadge').textContent = jobs.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(j => {
+        const client = clients.find(c => c.id === j.client_id);
+        const staff = staffMembers.find(s => s.id === j.staff_id);
+        const rev = j.revenue_ex_tax || 0;
+        const cost = j.cost_budget || 0;
+        const profit = rev - cost;
+        const profitColor = profit > 0 ? 'var(--green)' : profit < 0 ? 'var(--red)' : 'var(--text2)';
+
+        return `<tr>
+          <td>${esc(j.job_code || j.job_number)}</td>
+          <td>${esc(j.title)}</td>
+          <td>${esc(client?.name || '')}</td>
+          <td>${fmt(rev)}</td>
+          <td>${fmt(cost)}</td>
+          <td style="color:${profitColor};font-weight:600">${fmt(profit)}</td>
+          <td>${statusBadge(j.status)}</td>
+          <td>${esc(staff?.name || '')}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openJobModal('${j.id}')">✏️</button>
+            <button class="btn-icon" onclick="deleteJobById('${j.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openJobModal(id = null) {
+      editingId = id;
+      ['jobNumber','jobTitle','jobRevenue','jobBudget','jobStartDate','jobEndDate','jobDescription'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('jobStatus').value = 'active';
+      document.getElementById('jobDeleteBtn').style.display = 'none';
+      document.getElementById('jobModalTitle').textContent = '新規 JOB';
+
+      if (id) {
+        const j = jobs.find(x => x.id === id);
+        if (j) {
+          document.getElementById('jobModalTitle').textContent = 'JOB編集';
+          document.getElementById('jobNumber').value = j.job_code || j.job_number || '';
+          document.getElementById('jobTitle').value = j.title || '';
+          document.getElementById('jobClient').value = j.client_id || '';
+          document.getElementById('jobStaff').value = j.staff_id || '';
+          document.getElementById('jobRevenue').value = j.revenue_ex_tax || '';
+          document.getElementById('jobBudget').value = j.cost_budget || '';
+          document.getElementById('jobStatus').value = j.status || 'active';
+          document.getElementById('jobEstimate').value = j.estimate_id || '';
+          document.getElementById('jobStartDate').value = j.start_date || j.started_at || '';
+          document.getElementById('jobEndDate').value = j.end_date || j.deadline || '';
+          document.getElementById('jobDescription').value = j.description || '';
+          document.getElementById('jobDeleteBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('jobModal').classList.add('show');
+    }
+
+    async function saveJob() {
+      const code = document.getElementById('jobNumber').value.trim();
+      const title = document.getElementById('jobTitle').value.trim();
+      if (!code || !title) { showToast('JOB番号と案件名は必須です', 'error'); return; }
+
+      const data = {
+        job_code: code, title,
+        client_id: document.getElementById('jobClient').value || null,
+        staff_id: document.getElementById('jobStaff').value || null,
+        revenue_ex_tax: parseInt(document.getElementById('jobRevenue').value) || null,
+        cost_budget: parseInt(document.getElementById('jobBudget').value) || null,
+        status: document.getElementById('jobStatus').value,
+        estimate_id: document.getElementById('jobEstimate').value || null,
+        started_at: document.getElementById('jobStartDate').value || null,
+        deadline: document.getElementById('jobEndDate').value || null,
+        description: document.getElementById('jobDescription').value.trim() || null,
+      };
+
+      const ok = editingId ? await sbUpdate('jobs', editingId, data) : (await sbInsert('jobs', data)) !== null;
+      if (ok) { showToast('保存しました'); closeModal('jobModal'); loadJobs(); }
+      else showToast('保存に失敗しました', 'error');
+    }
+
+    async function deleteJobById(id) {
+      if (confirm('このJOBを削除しますか？')) {
+        if (await sbDelete('jobs', id)) { showToast('削除しました'); loadJobs(); }
+      }
+    }
+    function deleteJob() { if (editingId) deleteJobById(editingId).then(() => closeModal('jobModal')); }
+
+    // ===== ESTIMATE FUNCTIONS =====
+    async function loadEstimates() {
+      estimates = await sbFetch('estimates', { order: 'created_at.desc' });
+      renderEstimates();
+    }
+
+    function renderEstimates() {
+      const tbody = document.getElementById('estimatesTableBody');
+      const search = (document.getElementById('estimatesSearch').value || '').toLowerCase();
+      const statusF = document.getElementById('estimatesStatusFilter').value;
+      let filtered = estimates.filter(e => {
+        const ms = !search || (e.estimate_number||'').toLowerCase().includes(search) || (e.title||'').toLowerCase().includes(search);
+        const mst = !statusF || e.status === statusF;
+        return ms && mst;
+      });
+
+      document.getElementById('estimatesBadge').textContent = estimates.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(e => {
+        const client = clients.find(c => c.id === e.client_id);
+        return `<tr>
+          <td>${esc(e.estimate_number)}</td>
+          <td>${esc(e.title)}</td>
+          <td>${esc(client?.name || '')}</td>
+          <td>${fmt(e.amount_ex_tax || e.subtotal || 0)}</td>
+          <td>${statusBadge(e.status)}</td>
+          <td>${fmtDate(e.valid_until)}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openEstimateModal('${e.id}')">✏️</button>
+            ${e.status === 'approved' ? `<button class="btn btn-success btn-sm" onclick="convertEstimateToJobById('${e.id}')">→JOB</button>` : ''}
+            <button class="btn-icon" onclick="deleteEstimateById('${e.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openEstimateModal(id = null) {
+      editingId = id;
+      ['estNumber','estTitle','estAmount','estValidUntil','estNotes'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('estStatus').value = 'draft';
+      document.getElementById('estTaxRate').value = '0.10';
+      document.getElementById('estDeleteBtn').style.display = 'none';
+      document.getElementById('estToJobBtn').style.display = 'none';
+      document.getElementById('estimateModalTitle').textContent = '新規 見積';
+
+      if (id) {
+        const e = estimates.find(x => x.id === id);
+        if (e) {
+          document.getElementById('estimateModalTitle').textContent = '見積編集';
+          document.getElementById('estNumber').value = e.estimate_number || '';
+          document.getElementById('estTitle').value = e.title || '';
+          document.getElementById('estClient').value = e.client_id || '';
+          document.getElementById('estStaff').value = e.staff_id || '';
+          document.getElementById('estAmount').value = e.amount_ex_tax || e.subtotal || '';
+          document.getElementById('estTaxRate').value = e.tax_rate || '0.10';
+          document.getElementById('estStatus').value = e.status || 'draft';
+          document.getElementById('estValidUntil').value = e.valid_until || '';
+          document.getElementById('estNotes').value = e.notes || '';
+          document.getElementById('estDeleteBtn').style.display = 'block';
+          if (e.status === 'approved') document.getElementById('estToJobBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('estimateModal').classList.add('show');
+    }
+
+    async function saveEstimate() {
+      const number = document.getElementById('estNumber').value.trim();
+      const title = document.getElementById('estTitle').value.trim();
+      const amount = parseInt(document.getElementById('estAmount').value);
+      if (!number || !title || !amount) { showToast('見積番号・件名・金額は必須です', 'error'); return; }
+
+      const data = {
+        estimate_number: number, title,
+        client_id: document.getElementById('estClient').value || null,
+        staff_id: document.getElementById('estStaff').value || null,
+        amount_ex_tax: amount,
+        tax_rate: parseFloat(document.getElementById('estTaxRate').value),
+        status: document.getElementById('estStatus').value,
+        valid_until: document.getElementById('estValidUntil').value || null,
+        notes: document.getElementById('estNotes').value.trim() || null,
+      };
+
+      const ok = editingId ? await sbUpdate('estimates', editingId, data) : (await sbInsert('estimates', data)) !== null;
+      if (ok) { showToast('保存しました'); closeModal('estimateModal'); loadEstimates(); }
+      else showToast('保存に失敗しました', 'error');
+    }
+
+    async function deleteEstimateById(id) {
+      if (confirm('この見積を削除しますか？')) {
+        if (await sbDelete('estimates', id)) { showToast('削除しました'); loadEstimates(); }
+      }
+    }
+    function deleteEstimate() { if (editingId) deleteEstimateById(editingId).then(() => closeModal('estimateModal')); }
+
+    async function convertEstimateToJobById(estId) {
+      const est = estimates.find(e => e.id === estId);
+      if (!est) return;
+      const jobData = {
+        job_code: est.estimate_number.replace('EST', 'JOB'),
+        title: est.title,
+        client_id: est.client_id,
+        staff_id: est.staff_id,
+        revenue_ex_tax: est.amount_ex_tax || est.subtotal,
+        status: 'active',
+        estimate_id: est.id,
+      };
+      const result = await sbInsert('jobs', jobData);
+      if (result) { showToast('見積からJOBを作成しました'); loadJobs(); }
+      else showToast('JOB作成に失敗しました', 'error');
+    }
+    function convertEstimateToJob() { if (editingId) convertEstimateToJobById(editingId).then(() => closeModal('estimateModal')); }
+
+    // ===== INVOICE FUNCTIONS =====
+    async function loadInvoices() {
+      invoicesIssued = await sbFetch('invoices_issued', { order: 'created_at.desc' });
+      // Auto-detect overdue
+      const todayStr = today();
+      invoicesIssued.forEach(inv => {
+        if (inv.due_date && inv.due_date < todayStr && inv.status !== 'paid' && inv.status !== 'draft') {
+          inv.status = 'overdue';
+        }
+      });
+      renderInvoices();
+      updateAlerts();
+    }
+
+    function renderInvoices() {
+      const tbody = document.getElementById('invoicesTableBody');
+      const search = (document.getElementById('invoicesSearch').value || '').toLowerCase();
+      const statusF = document.getElementById('invoicesStatusFilter').value;
+      let filtered = invoicesIssued.filter(i => {
+        const client = clients.find(c => c.id === i.client_id);
+        const ms = !search || (i.invoice_number||'').toLowerCase().includes(search) || (client?.name||'').toLowerCase().includes(search);
+        const mst = !statusF || i.status === statusF;
+        return ms && mst;
+      });
+
+      document.getElementById('invoicesBadge').textContent = invoicesIssued.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(i => {
+        const client = clients.find(c => c.id === i.client_id);
+        const job = jobs.find(j => j.id === i.job_id);
+        const taxAmount = i.tax_amount || Math.floor((i.amount_ex_tax || 0) * 0.1);
+        const total = (i.amount_ex_tax || 0) + taxAmount;
+        const isOverdue = i.status === 'overdue';
+
+        return `<tr style="${isOverdue ? 'background:var(--red-dim)' : ''}">
+          <td>${esc(i.invoice_number)}</td>
+          <td>${esc(job?.title || job?.job_code || '')}</td>
+          <td>${esc(client?.name || '')}</td>
+          <td><strong>${fmt(total)}</strong></td>
+          <td>${fmtDate(i.issue_date)}</td>
+          <td>${fmtDate(i.due_date)}</td>
+          <td>${statusBadge(i.status)}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openInvoiceModal('${i.id}')">✏️</button>
+            <button class="btn-icon" onclick="deleteInvoiceById('${i.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openInvoiceModal(id = null) {
+      editingId = id;
+      ['invNumber','invAmount','invTax','invIssueDate','invDueDate','invNotes'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('invStatus').value = 'draft';
+      document.getElementById('invDeleteBtn').style.display = 'none';
+      document.getElementById('invoiceModalTitle').textContent = '新規 請求書';
+
+      if (id) {
+        const i = invoicesIssued.find(x => x.id === id);
+        if (i) {
+          document.getElementById('invoiceModalTitle').textContent = '請求書編集';
+          document.getElementById('invNumber').value = i.invoice_number || '';
+          document.getElementById('invJob').value = i.job_id || '';
+          document.getElementById('invClient').value = i.client_id || '';
+          document.getElementById('invAmount').value = i.amount_ex_tax || '';
+          document.getElementById('invTax').value = i.tax_amount || Math.floor((i.amount_ex_tax||0)*0.1);
+          document.getElementById('invStatus').value = i.status === 'overdue' ? 'sent' : (i.status || 'draft');
+          document.getElementById('invIssueDate').value = i.issue_date || '';
+          document.getElementById('invDueDate').value = i.due_date || '';
+          document.getElementById('invNotes').value = i.notes || '';
+          document.getElementById('invDeleteBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('invoiceModal').classList.add('show');
+    }
+
+    // Auto-calc tax when amount changes
+    document.getElementById('invAmount')?.addEventListener('input', function() {
+      document.getElementById('invTax').value = Math.floor((parseInt(this.value) || 0) * 0.1);
+    });
+
+    async function saveInvoice() {
+      const number = document.getElementById('invNumber').value.trim();
+      const amount = parseInt(document.getElementById('invAmount').value);
+      const issueDate = document.getElementById('invIssueDate').value;
+      const dueDate = document.getElementById('invDueDate').value;
+      if (!number || !amount || !issueDate || !dueDate) { showToast('請求番号・金額・発行日・支払期日は必須です', 'error'); return; }
+
+      const data = {
+        invoice_number: number,
+        job_id: document.getElementById('invJob').value || null,
+        client_id: document.getElementById('invClient').value || null,
+        amount_ex_tax: amount,
+        tax_amount: parseInt(document.getElementById('invTax').value) || Math.floor(amount * 0.1),
+        status: document.getElementById('invStatus').value,
+        issue_date: issueDate, due_date: dueDate,
+        notes: document.getElementById('invNotes').value.trim() || null,
+      };
+
+      const ok = editingId ? await sbUpdate('invoices_issued', editingId, data) : (await sbInsert('invoices_issued', data)) !== null;
+      if (ok) { showToast('保存しました'); closeModal('invoiceModal'); loadInvoices(); }
+      else showToast('保存に失敗しました（テーブルが未作成の可能性）', 'error');
+    }
+
+    async function deleteInvoiceById(id) {
+      if (confirm('この請求書を削除しますか？')) {
+        if (await sbDelete('invoices_issued', id)) { showToast('削除しました'); loadInvoices(); }
+      }
+    }
+    function deleteInvoice() { if (editingId) deleteInvoiceById(editingId).then(() => closeModal('invoiceModal')); }
+
+    // ===== PAYMENT FUNCTIONS =====
+    async function loadPayments() {
+      paymentsReceived = await sbFetch('payments_received', { order: 'created_at.desc' });
+      renderPayments();
+    }
+
+    function renderPayments() {
+      const tbody = document.getElementById('paymentsTableBody');
+      const search = (document.getElementById('paymentsSearch').value || '').toLowerCase();
+      let filtered = paymentsReceived.filter(p => {
+        return !search || (p.payer_name||'').toLowerCase().includes(search) || (p.bank_ref||'').toLowerCase().includes(search);
+      });
+
+      document.getElementById('paymentsBadge').textContent = paymentsReceived.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(p => {
+        const inv = invoicesIssued.find(i => i.id === p.invoice_id);
+        return `<tr>
+          <td>${fmtDate(p.received_date || p.payment_date)}</td>
+          <td>${esc(p.payer_name || '-')}</td>
+          <td><strong>${fmt(p.amount)}</strong></td>
+          <td>${inv ? esc(inv.invoice_number) : '-'}</td>
+          <td>${p.match_method === 'auto' ? '<span class="badge badge-green">自動</span>' : '<span class="badge badge-gray">手動</span>'}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openPaymentModal('${p.id}')">✏️</button>
+            <button class="btn-icon" onclick="deletePaymentById('${p.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openPaymentModal(id = null) {
+      editingId = id;
+      ['payDate','payAmount','payBankRef','payNotes'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('payDeleteBtn').style.display = 'none';
+      document.getElementById('paymentModalTitle').textContent = '新規 入金';
+      updatePaymentInvoiceDropdown();
+
+      if (id) {
+        const p = paymentsReceived.find(x => x.id === id);
+        if (p) {
+          document.getElementById('paymentModalTitle').textContent = '入金編集';
+          document.getElementById('payDate').value = p.received_date || p.payment_date || '';
+          document.getElementById('payAmount').value = p.amount || '';
+          document.getElementById('payInvoice').value = p.invoice_id || '';
+          document.getElementById('payBankRef').value = p.bank_ref || '';
+          document.getElementById('payMatchMethod').value = p.match_method || 'manual';
+          document.getElementById('payNotes').value = p.notes || '';
+          document.getElementById('payDeleteBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('paymentModal').classList.add('show');
+    }
+
+    async function savePayment() {
+      const payDate = document.getElementById('payDate').value;
+      const amount = parseInt(document.getElementById('payAmount').value);
+      if (!payDate || !amount) { showToast('入金日と金額は必須です', 'error'); return; }
+
+      const data = {
+        received_date: payDate, amount,
+        invoice_id: document.getElementById('payInvoice').value || null,
+        bank_ref: document.getElementById('payBankRef').value.trim() || null,
+        match_method: document.getElementById('payMatchMethod').value,
+        notes: document.getElementById('payNotes').value.trim() || null,
+      };
+
+      const ok = editingId ? await sbUpdate('payments_received', editingId, data) : (await sbInsert('payments_received', data)) !== null;
+      if (ok) {
+        // If linked to invoice, mark as paid
+        if (data.invoice_id) {
+          await sbUpdate('invoices_issued', data.invoice_id, { status: 'paid', paid_date: payDate, paid_amount: amount });
+        }
+        showToast('保存しました'); closeModal('paymentModal'); loadPayments(); loadInvoices();
+      }
+      else showToast('保存に失敗しました', 'error');
+    }
+
+    async function deletePaymentById(id) {
+      if (confirm('この入金を削除しますか？')) {
+        if (await sbDelete('payments_received', id)) { showToast('削除しました'); loadPayments(); }
+      }
+    }
+    function deletePayment() { if (editingId) deletePaymentById(editingId).then(() => closeModal('paymentModal')); }
+
+    // ===== EXPENSE FUNCTIONS =====
+    async function loadExpenses() {
+      expenses = await sbFetch('expenses', { order: 'created_at.desc' });
+      renderExpenses();
+    }
+
+    function renderExpenses() {
+      const tbody = document.getElementById('expensesTableBody');
+      const search = (document.getElementById('expensesSearch').value || '').toLowerCase();
+      const catF = document.getElementById('expensesCategoryFilter').value;
+      let filtered = expenses.filter(e => {
+        const ms = !search || (e.vendor_name||'').toLowerCase().includes(search) || (e.category||'').toLowerCase().includes(search);
+        const mc = !catF || e.category === catF;
+        return ms && mc;
+      });
+
+      document.getElementById('expensesBadge').textContent = expenses.length;
+
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">データなし</td></tr>'; return; }
+
+      tbody.innerHTML = filtered.map(e => {
+        const job = jobs.find(j => j.id === e.job_id);
+        return `<tr>
+          <td>${fmtDate(e.date)}</td>
+          <td><span class="badge badge-purple">${esc(e.category)}</span></td>
+          <td>${esc(e.vendor_name || '-')}</td>
+          <td>${fmt(e.amount)}</td>
+          <td>${esc(e.payment_method || '-')}</td>
+          <td>${job ? esc(job.job_code || job.title) : '-'}</td>
+          <td>${e.mf_exported ? '<span class="badge badge-green">済</span>' : '<span class="badge badge-gray">未</span>'}</td>
+          <td class="action-btns">
+            <button class="btn-icon" onclick="openExpenseModal('${e.id}')">✏️</button>
+            <button class="btn-icon" onclick="deleteExpenseById('${e.id}')">🗑️</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
+    function openExpenseModal(id = null) {
+      editingId = id;
+      ['expDate','expVendor','expAmount','expNotes'].forEach(f => document.getElementById(f).value = '');
+      document.getElementById('expCategory').value = '';
+      document.getElementById('expPayMethod').value = 'amex';
+      document.getElementById('expDeleteBtn').style.display = 'none';
+      document.getElementById('expenseModalTitle').textContent = '新規 経費';
+
+      if (id) {
+        const e = expenses.find(x => x.id === id);
+        if (e) {
+          document.getElementById('expenseModalTitle').textContent = '経費編集';
+          document.getElementById('expDate').value = e.date || '';
+          document.getElementById('expCategory').value = e.category || '';
+          document.getElementById('expVendor').value = e.vendor_name || '';
+          document.getElementById('expAmount').value = e.amount || '';
+          document.getElementById('expPayMethod').value = e.payment_method || 'amex';
+          document.getElementById('expJob').value = e.job_id || '';
+          document.getElementById('expNotes').value = e.notes || '';
+          document.getElementById('expDeleteBtn').style.display = 'block';
+        }
+      }
+      document.getElementById('expenseModal').classList.add('show');
+    }
+
+    async function saveExpense() {
+      const date = document.getElementById('expDate').value;
+      const category = document.getElementById('expCategory').value;
+      const amount = parseInt(document.getElementById('expAmount').value);
+      if (!date || !category || !amount) { showToast('日付・カテゴリ・金額は必須です', 'error'); return; }
+
+      const data = {
+        date, category, amount,
+        vendor_name: document.getElementById('expVendor').value.trim() || null,
+        payment_method: document.getElementById('expPayMethod').value,
+        job_id: document.getElementById('expJob').value || null,
+        notes: document.getElementById('expNotes').value.trim() || null,
+        mf_exported: false,
+      };
+
+      const ok = editingId ? await sbUpdate('expenses', editingId, data) : (await sbInsert('expenses', data)) !== null;
+      if (ok) { showToast('保存しました'); closeModal('expenseModal'); loadExpenses(); }
+      else showToast('保存に失敗しました（テーブルが未作成の可能性）', 'error');
+    }
+
+    async function deleteExpenseById(id) {
+      if (confirm('この経費を削除しますか？')) {
+        if (await sbDelete('expenses', id)) { showToast('削除しました'); loadExpenses(); }
+      }
+    }
+    function deleteExpense() { if (editingId) deleteExpenseById(editingId).then(() => closeModal('expenseModal')); }
+
+    // ===== CSV IMPORT (UFJ) =====
+    function handleUFJDrop(event) { event.preventDefault(); document.getElementById('ufjDropZone').classList.remove('active'); handleUFJFile({ target: { files: event.dataTransfer.files } }); }
+    function handleUFJFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => parseUFJCSV(e.target.result);
+      reader.readAsText(file, 'shift_jis');
+    }
+
+    function parseUFJCSV(content) {
+      const lines = content.split('\n').filter(l => l.trim());
+      if (lines.length < 2) { showToast('有効なCSVではありません', 'error'); return; }
+      const headers = lines[0].split(',');
+      const data = lines.slice(1).map(line => line.split(','));
+
+      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">UFJ入出金明細プレビュー（${data.length}件）</h4>`;
+      html += '<div class="table-wrap"><table><thead><tr>' + headers.map(h => `<th>${esc(h.trim())}</th>`).join('') + '</tr></thead><tbody>';
+      html += data.slice(0, 10).map(row => '<tr>' + row.map(c => `<td>${esc(c.trim())}</td>`).join('') + '</tr>').join('');
+      html += '</tbody></table></div>';
+      html += `<div style="margin-top:1rem;display:flex;gap:0.5rem"><button class="btn btn-primary" onclick="runAutoMatching()">🔄 自動消込実行</button><button class="btn btn-secondary" onclick="document.getElementById('ufjPreview').style.display='none'">閉じる</button></div>`;
+      document.getElementById('ufjPreview').innerHTML = html;
+      document.getElementById('ufjPreview').style.display = 'block';
+      window._ufjData = { headers: headers.map(h => h.trim()), data };
+    }
+
+    async function runAutoMatching() {
+      if (!window._ufjData || !window._ufjData.data.length) { showToast('UFJデータがありません', 'error'); return; }
+      const ufjRows = window._ufjData.data;
+      const unpaidInvoices = invoicesIssued.filter(i => i.status !== 'paid' && i.status !== 'draft');
+
+      const autoMatched = [], candidates = [], noMatch = [];
+
+      for (const row of ufjRows) {
+        // UFJ CSV typical columns: 日付, 摘要, 入金, 出金, 残高
+        const amount = parseInt((row[2]||'').replace(/[^\d]/g,'')) || 0;
+        const desc = (row[1]||'').trim();
+        if (amount <= 0) continue; // Skip outflows
+
+        // Find invoices matching by amount (tax-inclusive)
+        const amountMatches = unpaidInvoices.filter(inv => {
+          const invTotal = (inv.amount_ex_tax||0) + (inv.tax_amount||Math.floor((inv.amount_ex_tax||0)*0.1));
+          return Math.abs(invTotal - amount) < 2; // Allow ¥1 rounding diff
+        });
+
+        if (amountMatches.length === 1) {
+          // Check partial name match
+          const inv = amountMatches[0];
+          const client = clients.find(c => c.id === inv.client_id);
+          const clientName = client?.name || '';
+          const clientKana = client?.name_kana || client?.name_short || '';
+          const nameMatch = clientName && (desc.includes(clientName) || (clientKana && desc.includes(clientKana)));
+
+          if (nameMatch) {
+            autoMatched.push({ row, invoice: inv, client, confidence: '自動', amount });
+          } else {
+            candidates.push({ row, invoices: amountMatches, amount, desc });
+          }
+        } else if (amountMatches.length > 1) {
+          candidates.push({ row, invoices: amountMatches, amount, desc });
+        } else {
+          noMatch.push({ row, amount, desc, date: (row[0]||'').trim() });
+        }
+      }
+
+      // Build results HTML
+      let html = '';
+
+      if (autoMatched.length) {
+        html += `<h4 style="color:var(--green);margin-bottom:0.5rem">✅ 自動マッチ（${autoMatched.length}件）</h4>`;
+        html += '<div class="table-wrap"><table><thead><tr><th>UFJ摘要</th><th>金額</th><th>請求書</th><th>クライアント</th><th>操作</th></tr></thead><tbody>';
+        html += autoMatched.map(m => `<tr>
+          <td>${esc((m.row[1]||'').trim())}</td>
+          <td>${fmt(m.amount)}</td>
+          <td>${esc(m.invoice.invoice_number)}</td>
+          <td>${esc(m.client?.name||'')}</td>
+          <td><button class="btn btn-success btn-sm" onclick="confirmAutoMatch('${m.invoice.id}',${m.amount},'${esc((m.row[0]||'').trim())}')">消込実行</button></td>
+        </tr>`).join('');
+        html += '</tbody></table></div>';
+        html += `<button class="btn btn-primary" style="margin:0.5rem 0" onclick="confirmAllAutoMatch()">全件一括消込</button>`;
+      }
+
+      if (candidates.length) {
+        html += `<h4 style="color:var(--yellow);margin:1rem 0 0.5rem">⚠️ 候補あり（${candidates.length}件）- 手動確認</h4>`;
+        html += '<div class="table-wrap"><table><thead><tr><th>UFJ摘要</th><th>金額</th><th>候補請求書</th></tr></thead><tbody>';
+        html += candidates.map(c => `<tr>
+          <td>${esc(c.desc)}</td>
+          <td>${fmt(c.amount)}</td>
+          <td>${c.invoices.map(inv => {
+            const cl = clients.find(x => x.id === inv.client_id);
+            return `${esc(inv.invoice_number)}(${esc(cl?.name||'')})`;
+          }).join(', ')}</td>
+        </tr>`).join('');
+        html += '</tbody></table></div>';
+      }
+
+      if (noMatch.length) {
+        html += `<h4 style="color:var(--red);margin:1rem 0 0.5rem">❌ 未マッチ（${noMatch.length}件）</h4>`;
+        html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>摘要</th><th>金額</th><th>操作</th></tr></thead><tbody>';
+        html += noMatch.map(n => `<tr>
+          <td>${esc(n.date)}</td>
+          <td>${esc(n.desc)}</td>
+          <td>${fmt(n.amount)}</td>
+          <td><button class="btn btn-secondary btn-sm" onclick="manualMatchPayment('${esc(n.desc)}',${n.amount},'${esc(n.date)}')">手動消込</button></td>
+        </tr>`).join('');
+        html += '</tbody></table></div>';
+      }
+
+      if (!html) html = '<p style="color:var(--text2);padding:1rem">入金データが見つかりませんでした。</p>';
+
+      switchPaymentTab('matching', document.querySelectorAll('#paymentsSection .tab-btn')[2]);
+      document.getElementById('matchingResults').innerHTML = html;
+      window._autoMatched = autoMatched;
+      showToast(`消込分析完了: 自動${autoMatched.length}件 / 候補${candidates.length}件 / 未マッチ${noMatch.length}件`);
+    }
+
+    async function confirmAutoMatch(invoiceId, amount, date) {
+      const inv = invoicesIssued.find(i => i.id === invoiceId);
+      if (!inv) return;
+      const client = clients.find(c => c.id === inv.client_id);
+      const paymentData = {
+        invoice_id: invoiceId,
+        amount: amount,
+        received_date: date || today(),
+        payer_name: client?.name || '',
+        payment_method: 'bank_transfer',
+        notes: 'UFJ CSV自動消込',
+      };
+      const result = await sbInsert('payments_received', paymentData);
+      if (result) {
+        await sbUpdate('invoices_issued', invoiceId, { status: 'paid' });
+        showToast(`${inv.invoice_number}を消込しました`);
+        await Promise.all([loadInvoices(), loadPayments()]);
+        updateDashboard();
+      }
+    }
+
+    async function confirmAllAutoMatch() {
+      if (!window._autoMatched || !window._autoMatched.length) return;
+      if (!confirm(`${window._autoMatched.length}件を一括消込しますか？`)) return;
+      let count = 0;
+      for (const m of window._autoMatched) {
+        await confirmAutoMatch(m.invoice.id, m.amount, (m.row[0]||'').trim());
+        count++;
+      }
+      showToast(`${count}件の一括消込が完了しました`);
+    }
+
+    function manualMatchPayment(desc, amount, date) {
+      openPaymentModal();
+      document.getElementById('payAmount').value = amount;
+      document.getElementById('payDate').value = date;
+      document.getElementById('payPayer').value = desc;
+      document.getElementById('payMethod').value = 'bank_transfer';
+      document.getElementById('payNotes').value = 'UFJ CSV手動消込';
+    }
+    }
+
+    // ===== CSV IMPORT (Amex) =====
+    function handleAmexDrop(event) { event.preventDefault(); document.getElementById('amexDropZone').classList.remove('active'); handleAmexFile({ target: { files: event.dataTransfer.files } }); }
+    function handleAmexFile(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => parseAmexCSV(e.target.result);
+      reader.readAsText(file, 'shift_jis');
+    }
+
+    function parseAmexCSV(content) {
+      const lines = content.split('\n').filter(l => l.trim());
+      if (lines.length < 2) { showToast('有効なCSVではありません', 'error'); return; }
+      const data = lines.slice(1).map(line => {
+        const cols = line.split(',');
+        const vendor = (cols[1] || '').trim();
+        const matchedRule = categoryRules.find(r => vendor.includes(r.pattern));
+        return { date: (cols[0]||'').trim(), vendor, amount: (cols[2]||'').trim(), category: matchedRule?.category || '' };
+      });
+
+      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">Amex明細プレビュー（${data.length}件）</h4>`;
+      html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>加盟店</th><th>金額</th><th>自動分類</th></tr></thead><tbody>';
+      html += data.map(d => `<tr><td>${esc(d.date)}</td><td>${esc(d.vendor)}</td><td>${esc(d.amount)}</td><td>${d.category ? `<span class="badge badge-green">${esc(d.category)}</span>` : '<span class="badge badge-yellow">未分類</span>'}</td></tr>`).join('');
+      html += '</tbody></table></div>';
+      html += `<div style="margin-top:1rem;display:flex;gap:0.5rem"><button class="btn btn-primary" onclick="importAmexData()">📥 経費にインポート</button><button class="btn btn-secondary" onclick="document.getElementById('amexPreview').style.display='none'">閉じる</button></div>`;
+      document.getElementById('amexPreview').innerHTML = html;
+      document.getElementById('amexPreview').style.display = 'block';
+      window._amexData = data;
+    }
+
+    async function importAmexData() {
+      if (!window._amexData) return;
+      let count = 0;
+      for (const d of window._amexData) {
+        const result = await sbInsert('expenses', {
+          date: d.date, category: d.category || 'その他',
+          vendor_name: d.vendor, amount: parseInt(d.amount.replace(/[^\d]/g, '')) || 0,
+          payment_method: 'amex', mf_exported: false,
+        });
+        if (result) count++;
+      }
+      showToast(`${count}件の経費をインポートしました`);
+      document.getElementById('amexPreview').style.display = 'none';
+      loadExpenses();
+    }
+
+    // ===== Category Master =====
+    function renderCategoryMaster() {
+      const tbody = document.getElementById('categoryMasterBody');
+      if (!categoryRules.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty-state">ルール未登録</td></tr>'; return; }
+      tbody.innerHTML = categoryRules.map((r, i) => `<tr>
+        <td>${esc(r.pattern)}</td>
+        <td><span class="badge badge-purple">${esc(r.category)}</span></td>
+        <td><button class="btn-icon" onclick="removeCategoryRule(${i})">🗑️</button></td>
+      </tr>`).join('');
+    }
+
+    function addCategoryRule() {
+      const pattern = prompt('加盟店名のパターンを入力（部分一致）');
+      if (!pattern) return;
+      const category = prompt('カテゴリを入力（家賃/通信費/ソフトウェア/交通費/会議費/接待交際費/消耗品費/その他）');
+      if (!category) return;
+      categoryRules.push({ pattern, category });
+      localStorage.setItem('categoryRules', JSON.stringify(categoryRules));
+      renderCategoryMaster();
+    }
+
+    function removeCategoryRule(i) {
+      categoryRules.splice(i, 1);
+      localStorage.setItem('categoryRules', JSON.stringify(categoryRules));
+      renderCategoryMaster();
+    }
+
+    // ===== MF EXPORT =====
+    function exportMFCSV() {
+      const month = document.getElementById('exportMonth').value;
+      if (!month) { showToast('対象月を選択してください', 'error'); return; }
+      const [year, mon] = month.split('-');
+      const rows = [['日付','借方科目','借方金額','貸方科目','貸方金額','摘要']];
+
+      if (document.getElementById('exportRevenue').checked) {
+        invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(month)).forEach(i => {
+          const client = clients.find(c => c.id === i.client_id);
+          const total = (i.amount_ex_tax || 0) + (i.tax_amount || 0);
+          rows.push([i.issue_date, '売掛金', total, '売上高', total, `${client?.name || ''} ${i.invoice_number || ''}`]);
+        });
+        paymentsReceived.filter(p => (p.received_date||p.payment_date||'').startsWith(month)).forEach(p => {
+          rows.push([p.received_date || p.payment_date, '普通預金', p.amount, '売掛金', p.amount, `入金 ${p.payer_name || ''}`]);
+        });
+      }
+
+      if (document.getElementById('exportExpenses').checked) {
+        const catMap = { '家賃': '地代家賃', '通信費': '通信費', 'ソフトウェア': '消耗品費', '交通費': '旅費交通費', '会議費': '会議費', '接待交際費': '接待交際費', '消耗品費': '消耗品費', 'その他': '雑費' };
+        expenses.filter(e => e.date && e.date.startsWith(month)).forEach(e => {
+          rows.push([e.date, catMap[e.category] || '雑費', e.amount, e.payment_method === 'amex' ? '未払金' : '普通預金', e.amount, `${e.vendor_name || ''} ${e.category}`]);
+        });
+      }
+
+      const csv = rows.map(r => r.join(',')).join('\n');
+      const bom = '\ufeff';
+      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `MF_${month}.csv`; a.click();
+      URL.revokeObjectURL(url);
+      showToast(`${month}のMoneyForward CSVをエクスポートしました`);
+    }
+
+    function previewMFCSV() {
+      const month = document.getElementById('exportMonth').value;
+      if (!month) { showToast('対象月を選択してください', 'error'); return; }
+      const rows = [];
+      const catMap = { '家賃': '地代家賃', '通信費': '通信費', 'ソフトウェア': '消耗品費', '交通費': '旅費交通費', '会議費': '会議費', '接待交際費': '接待交際費', '消耗品費': '消耗品費', 'その他': '雑費' };
+
+      if (document.getElementById('exportRevenue').checked) {
+        invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(month)).forEach(i => {
+          const client = clients.find(c => c.id === i.client_id);
+          const total = (i.amount_ex_tax||0) + (i.tax_amount||0);
+          rows.push({ date: i.issue_date, debit: '売掛金', dAmt: total, credit: '売上高', cAmt: total, summary: `${client?.name||''} ${i.invoice_number||''}` });
+        });
+        paymentsReceived.filter(p => (p.received_date||p.payment_date||'').startsWith(month)).forEach(p => {
+          rows.push({ date: p.received_date||p.payment_date, debit: '普通預金', dAmt: p.amount, credit: '売掛金', cAmt: p.amount, summary: `入金 ${p.payer_name||''}` });
+        });
+      }
+      if (document.getElementById('exportExpenses').checked) {
+        expenses.filter(e => e.date && e.date.startsWith(month)).forEach(e => {
+          rows.push({ date: e.date, debit: catMap[e.category]||'雑費', dAmt: e.amount, credit: e.payment_method === 'amex' ? '未払金' : '普通預金', cAmt: e.amount, summary: `${e.vendor_name||''} ${e.category}` });
+        });
+      }
+
+      if (!rows.length) {
+        document.getElementById('mfPreview').innerHTML = '<p style="color:var(--text2);padding:1rem">対象データがありません</p>';
+        document.getElementById('mfPreview').style.display = 'block';
+        return;
+      }
+
+      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">MoneyForward仕訳プレビュー（${rows.length}件）</h4>`;
+      html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>借方科目</th><th>借方金額</th><th>貸方科目</th><th>貸方金額</th><th>摘要</th></tr></thead><tbody>';
+      html += rows.map(r => `<tr><td>${esc(r.date)}</td><td>${esc(r.debit)}</td><td>${fmt(r.dAmt)}</td><td>${esc(r.credit)}</td><td>${fmt(r.cAmt)}</td><td>${esc(r.summary)}</td></tr>`).join('');
+      html += '</tbody></table></div>';
+      document.getElementById('mfPreview').innerHTML = html;
+      document.getElementById('mfPreview').style.display = 'block';
+    }
+
+    // ===== TAB SWITCHING =====
+    function switchPaymentTab(tab, btn) {
+      document.querySelectorAll('#paymentsSection .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#paymentsSection .tab-content').forEach(c => c.classList.remove('active'));
+      (btn || event.target).classList.add('active');
+      document.getElementById(`payments-${tab}`).classList.add('active');
+    }
+
+    function switchExpenseTab(tab, btn) {
+      document.querySelectorAll('#expensesSection .tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('#expensesSection .tab-content').forEach(c => c.classList.remove('active'));
+      (btn || event.target).classList.add('active');
+      document.getElementById(`expenses-${tab}`).classList.add('active');
+    }
+
+    // ===== DROPDOWN UPDATES =====
+    function updateClientDropdowns() {
+      const opts = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
+      ['jobClient','estClient','invClient'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+    }
+
+    function updateJobDropdowns() {
+      const jobOpts = '<option value="">選択...</option>' + jobs.map(j => `<option value="${j.id}">${esc(j.job_code||j.job_number)} - ${esc(j.title)}</option>`).join('');
+      ['invJob','expJob','jobEstimate'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el && id !== 'jobEstimate') el.innerHTML = jobOpts;
+      });
+      // Estimate dropdown for job modal
+      const estOpts = '<option value="">なし</option>' + estimates.map(e => `<option value="${e.id}">${esc(e.estimate_number)} - ${esc(e.title)}</option>`).join('');
+      const estEl = document.getElementById('jobEstimate');
+      if (estEl) estEl.innerHTML = estOpts;
+    }
+
+    function updateStaffDropdown() {
+      const opts = '<option value="">選択...</option>' + staffMembers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+      ['jobStaff','estStaff'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
+    }
+
+    function updatePaymentInvoiceDropdown() {
+      const opts = '<option value="">選択...</option>' + invoicesIssued.filter(i => i.status !== 'paid').map(i => {
+        const client = clients.find(c => c.id === i.client_id);
+        const total = (i.amount_ex_tax||0) + (i.tax_amount||0);
+        return `<option value="${i.id}">${esc(i.invoice_number)} - ${esc(client?.name||'')} ${fmt(total)}</option>`;
+      }).join('');
+      document.getElementById('payInvoice').innerHTML = opts;
+    }
+
+    // ===== ALERTS =====
+    function updateAlerts() {
+      const overdue = invoicesIssued.filter(i => i.status === 'overdue');
+      const soon = invoicesIssued.filter(i => {
+        if (i.status === 'paid' || i.status === 'draft' || i.status === 'overdue') return false;
+        const due = new Date(i.due_date);
+        const diff = (due - new Date()) / (1000*60*60*24);
+        return diff >= 0 && diff <= 7;
+      });
+
+      if (overdue.length > 0) {
+        document.getElementById('alertBanner').classList.add('show');
+        document.getElementById('alertBadgeCount').textContent = `${overdue.length}件`;
+        document.getElementById('alertText').textContent = `期限超過の請求書が${overdue.length}件あります！${soon.length > 0 ? ` また${soon.length}件が7日以内に期限到来` : ''}`;
+        document.getElementById('alertNav').style.display = 'inline-block';
+        document.getElementById('alertNavCount').textContent = overdue.length;
+        document.getElementById('kpiOverdueCard').style.display = 'block';
+        document.getElementById('kpiOverdue').textContent = overdue.length + '件';
+      } else {
+        document.getElementById('alertBanner').classList.remove('show');
+        document.getElementById('alertNav').style.display = 'none';
+        document.getElementById('kpiOverdueCard').style.display = 'none';
+      }
+    }
+
+    // ===== DASHBOARD KPIs =====
+    function updateDashboard() {
+      const now = new Date();
+      const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+      // Revenue
+      const monthRevenue = invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(monthStart))
+        .reduce((s, i) => s + (i.amount_ex_tax||0) + (i.tax_amount||0), 0);
+      document.getElementById('kpiRevenue').textContent = fmt(monthRevenue);
+      document.getElementById('plRevenue').textContent = fmt(monthRevenue);
+
+      // Cost (from jobs cost_budget as proxy)
+      const monthCost = jobs.filter(j => j.status === 'active').reduce((s, j) => s + (j.cost_budget||0), 0);
+      document.getElementById('kpiCost').textContent = fmt(monthCost);
+      document.getElementById('plCostPart').textContent = fmt(monthCost);
+
+      // Expenses
+      const monthExpense = expenses.filter(e => e.date && e.date.startsWith(monthStart)).reduce((s, e) => s + (e.amount||0), 0);
+      document.getElementById('kpiExpense').textContent = fmt(monthExpense);
+      document.getElementById('plExpensePart').textContent = fmt(monthExpense);
+
+      // Profit
+      const totalExpenseOut = monthCost + monthExpense;
+      const profit = monthRevenue - totalExpenseOut;
+      const profitRate = monthRevenue > 0 ? Math.round((profit / monthRevenue) * 100) : 0;
+      document.getElementById('kpiProfit').textContent = fmt(profit);
+      document.getElementById('kpiProfitRate').textContent = `粗利率 ${profitRate}%`;
+      document.getElementById('plExpenseTotal').textContent = fmt(totalExpenseOut);
+      document.getElementById('plNetProfit').textContent = fmt(profit);
+      document.getElementById('plNetRate').textContent = `${profitRate}%`;
+      document.getElementById('plNetProfit').style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
+
+      // P&L bars
+      const maxVal = Math.max(monthRevenue, totalExpenseOut, 1);
+      document.getElementById('plRevenueBar').style.width = `${(monthRevenue/maxVal)*100}%`;
+      document.getElementById('plExpenseBar').style.width = `${(totalExpenseOut/maxVal)*100}%`;
+      document.getElementById('plNetBar').style.width = `${Math.max(0,(profit/maxVal)*100)}%`;
+
+      // Unpaid
+      const unpaid = invoicesIssued.filter(i => i.status !== 'paid' && i.status !== 'draft');
+      const unpaidTotal = unpaid.reduce((s, i) => s + (i.amount_ex_tax||0) + (i.tax_amount||0), 0);
+      document.getElementById('kpiUnpaid').textContent = fmt(unpaidTotal);
+      document.getElementById('kpiUnpaidCount').textContent = `${unpaid.length}件`;
+
+      // Jobs
+      const activeJobs = jobs.filter(j => j.status === 'active').length;
+      document.getElementById('kpiActiveJobs').textContent = activeJobs;
+      document.getElementById('kpiTotalJobs').textContent = `全${jobs.length}件`;
+
+      // Clients
+      document.getElementById('kpiClientCount').textContent = clients.length;
+
+      // Export month default
+      document.getElementById('exportMonth').value = monthStart;
+    }
+
+    // ===== SEARCH LISTENERS =====
+    function setupSearchListeners() {
+      document.getElementById('jobsSearch').addEventListener('input', renderJobs);
+      document.getElementById('clientsSearch').addEventListener('input', renderClients);
+      document.getElementById('estimatesSearch').addEventListener('input', renderEstimates);
+      document.getElementById('invoicesSearch').addEventListener('input', renderInvoices);
+      document.getElementById('paymentsSearch').addEventListener('input', renderPayments);
+      document.getElementById('expensesSearch').addEventListener('input', renderExpenses);
+    }
+
+    // ===== INITIALIZATION =====
+    async function initialize() {
+      staffMembers = await sbFetch('staff_members', { order: 'created_at.desc' });
+      updateStaffDropdown();
+
+      await Promise.all([loadClients(), loadJobs(), loadEstimates(), loadInvoices(), loadPayments(), loadExpenses()]);
+
+      updateJobDropdowns();
+      updateDashboard();
+      updateAlerts();
+      setupSearchListeners();
+      renderCategoryMaster();
+    }
+
+    window.addEventListener('DOMContentLoaded', initialize);
+  </script>
 </body>
 </html>
