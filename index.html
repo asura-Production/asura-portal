@@ -850,8 +850,7 @@
                                 <th>案件名</th>
                                 <th>クライアント</th>
                                 <th>フェーズ</th>
-                                <th>金�
-</th>
+                                <th>金額</th>
                                 <th>担当</th>
                                 <th>操作</th>
                             </tr>
@@ -887,8 +886,7 @@
                     <thead>
                         <tr>
                             <th>入金日</th>
-                            <th>金�
-</th>
+                            <th>金額</th>
                             <th>摘要</th>
                             <th>マッチング</th>
                             <th>操作</th>
@@ -1000,8 +998,7 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label class="form-label">見積金�
-</label>
+                        <label class="form-label">見積金額</label>
                         <input type="number" id="jobAmount" class="form-input" placeholder="0" value="0">
                     </div>
                 </div>
@@ -1042,8 +1039,7 @@
                                 <th>項目名</th>
                                 <th>数量</th>
                                 <th>単価</th>
-                                <th>金�
-</th>
+                                <th>金額</th>
                             </tr>
                         </thead>
                         <tbody id="estimateItemsBody">
@@ -1255,7 +1251,7 @@
             const currentMonth = new Date().getMonth() + 1;
             const monthRevenue = invoicesIssued.filter(inv => {
                 const invDate = new Date(inv.issue_date);
-                return invD��-ate.getMonth() + 1 === currentMonth && inv.status === 'paid';
+                return invDate.getMonth() + 1 === currentMonth && inv.status === 'paid';
             }).reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
             const monthExpenses = expenses.filter(exp => {
                 const expDate = new Date(exp.expense_date);
