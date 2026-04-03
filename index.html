@@ -811,6 +811,17 @@
                 <div class="kpi-subtext" id="kpi-active-jobs-subtext">0件</div>
             </div>
         </div>
+        <div style="background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-top: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                <h3 style="font-size: 15px; color: var(--text);">月次推移</h3>
+                <div style="display: flex; gap: 16px; font-size: 12px;">
+                    <span style="color: var(--green);">&#9632; 売上</span>
+                    <span style="color: var(--orange);">&#9632; 経費</span>
+                    <span style="color: var(--primary);">&#9632; 粗利</span>
+                </div>
+            </div>
+            <div id="monthlyChart" style="display: flex; align-items: flex-end; gap: 4px; height: 160px; padding-top: 8px;"></div>
+        </div>
     </div>
 
     <div id="projects" class="tab-content">
@@ -1261,7 +1272,19 @@
             const profitPercent = monthRevenue > 0 ? ((profit / monthRevenue) * 100).toFixed(1) : 0;
             const unpaidTotal = invoicesIssued.filter(inv => ['draft', 'sent', 'overdue'].includes(inv.status)).reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
             const activeJobsCount = jobs.filter(job => job.status === 'active').length;
+            const prevMonth = currentMonth === 1 ? 12 : currentMonth - 1;
+            const prevMonthRevenue = invoicesIssued.filter(inv => {
+                const invDate = new Date(inv.issue_date);
+                return invDate.getMonth() + 1 === prevMonth && inv.status === 'paid';
+            }).reduce((sum, inv) => sum + (inv.total_amount || 0), 0);
+            const revenueChange = prevMonthRevenue > 0 ? (((monthRevenue - prevMonthRevenue) / prevMonthRevenue) * 100).toFixed(0) : '─';
+            const subcontractExpenses = expenses.filter(exp => {
+                const expDate = new Date(exp.expense_date);
+                return expDate.getMonth() + 1 === currentMonth && (exp.category || '').includes('外注');
+            }).reduce((sum, exp) => sum + (exp.amount || 0), 0);
             document.getElementById('kpi-revenue').textContent = formatCurrency(monthRevenue);
+            document.getElementById('kpi-revenue-subtext').textContent = revenueChange === '─' ? '前月比: ─' : `前月比: ${revenueChange > 0 ? '+' : ''}${revenueChange}%`;
+            document.getElementById('kpi-subcontract').textContent = formatCurrency(subcontractExpenses);
             document.getElementById('kpi-expenses').textContent = formatCurrency(monthExpenses);
             document.getElementById('kpi-profit').textContent = formatCurrency(profit);
             document.getElementById('kpi-profit-percent').textContent = `${profitPercent}%`;
@@ -1269,13 +1292,35 @@
             document.getElementById('kpi-unpaid-subtext').textContent = `${invoicesIssued.filter(inv => ['draft', 'sent', 'overdue'].includes(inv.status)).length}件の未払い`;
             document.getElementById('kpi-active-jobs').textContent = activeJobsCount;
             document.getElementById('kpi-active-jobs-subtext').textContent = `${activeJobsCount}件`;
+            updateMonthlyChart();
+        }
+
+
+        function updateMonthlyChart() {
+            const monthLabels = ['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+            const monthlyData = monthLabels.map((label, idx) => {
+                const m = idx + 1;
+                const rev = invoicesIssued.filter(inv => { const d = new Date(inv.issue_date); return d.getMonth() + 1 === m && inv.status === 'paid'; }).reduce((s, inv) => s + (inv.total_amount || 0), 0);
+                const exp = expenses.filter(e => { const d = new Date(e.expense_date); return d.getMonth() + 1 === m; }).reduce((s, e) => s + (e.amount || 0), 0);
+                return { label, rev, exp, profit: rev - exp };
+            });
+            const maxVal = Math.max(1, ...monthlyData.map(d => Math.max(d.rev, d.exp, Math.abs(d.profit))));
+            const chart = document.getElementById('monthlyChart');
+            const cm = new Date().getMonth();
+            chart.innerHTML = monthlyData.map((d, i) => {
+                const rH = Math.max(2, (d.rev / maxVal) * 120);
+                const eH = Math.max(2, (d.exp / maxVal) * 120);
+                const pH = Math.max(2, (Math.abs(d.profit) / maxVal) * 120);
+                const cur = i === cm;
+                return `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:4px 0;${cur?'border:1px solid var(--primary);border-radius:6px;background:var(--bg3);':''}"><div style="display:flex;gap:2px;align-items:flex-end;height:120px;"><div style="width:6px;height:${rH}px;background:var(--green);border-radius:2px;" title="売上: ${formatCurrency(d.rev)}"></div><div style="width:6px;height:${eH}px;background:var(--orange);border-radius:2px;" title="経費: ${formatCurrency(d.exp)}"></div><div style="width:6px;height:${pH}px;background:${d.profit>=0?'var(--primary)':'var(--red)'};border-radius:2px;" title="粗利: ${formatCurrency(d.profit)}"></div></div><div style="font-size:10px;color:${cur?'var(--primary)':'var(--muted)'};font-weight:${cur?'600':'400'};">${d.label}</div></div>`;
+            }).join('');
         }
 
         function updateClientList() {
             const list = document.getElementById('clientList');
             const search = document.getElementById('clientSearch').value.toLowerCase();
-            const filtered = clients.filter(c => c.company_name.toLowerCase().includes(search));
-            list.innerHTML = filtered.map(client => `<div class="client-item ${selectedClientId === client.id ? 'active' : ''}" onclick="selectClient('${client.id}')">${client.company_name}</div>`).join('');
+            const filtered = clients.filter(c => (c.company_name || '').toLowerCase().includes(search));
+            list.innerHTML = filtered.map(client => `<div class="client-item ${selectedClientId === client.id ? 'active' : ''}" onclick="selectClient('${client.id}')">${client.company_name || '(名称未設定)'}</div>`).join('');
         }
 
         function selectClient(id) {
@@ -1293,8 +1338,8 @@
                 const client = clients.find(c => c.id === job.client_id);
                 const staff = staffMembers.find(s => s.id === job.staff_id);
                 if (selectedClientId && job.client_id !== selectedClientId) return;
-                if (search && !job.job_name.toLowerCase().includes(search) && !job.job_number.toLowerCase().includes(search)) return;
-                if (phaseFilter && (phaseFilter === 'active' ? job.status !== 'active' : true)) return;
+                if (search && !(job.job_name || '').toLowerCase().includes(search) && !(job.job_number || '').toLowerCase().includes(search)) return;
+                if (phaseFilter && job.status !== phaseFilter) return;
                 items.push({
                     type: 'job',
                     id: job.id,
@@ -1311,7 +1356,7 @@
             estimates.forEach(est => {
                 const client = clients.find(c => c.id === est.client_id);
                 if (selectedClientId && est.client_id !== selectedClientId) return;
-                if (search && !est.title.toLowerCase().includes(search)) return;
+                if (search && !(est.title || '').toLowerCase().includes(search)) return;
                 if (phaseFilter && phaseFilter !== '見積中') return;
                 items.push({
                     type: 'estimate',
@@ -1401,9 +1446,9 @@
             document.getElementById('jobAmount').value = '0';
             document.getElementById('jobNotes').value = '';
             const clientSelect = document.getElementById('jobClient');
-            clientSelect.innerHTML = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${c.company_name}</option>`).join('');
+            clientSelect.innerHTML = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${c.company_name || "(名称未設定)"}</option>`).join('');
             const staffSelect = document.getElementById('jobStaff');
-            staffSelect.innerHTML = '<option value="">選択...</option>' + staffMembers.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+            staffSelect.innerHTML = '<option value="">選択...</option>' + staffMembers.map(s => `<option value="${s.id}">${s.name || '(名前未設定)'}</option>`).join('');
             openModal('newJobModal');
         }
 
@@ -1453,7 +1498,7 @@
             document.getElementById('estimateNotes').value = '';
             document.getElementById('estimateValidUntil').value = '';
             const clientSelect = document.getElementById('estimateClient');
-            clientSelect.innerHTML = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${c.company_name}</option>`).join('');
+            clientSelect.innerHTML = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${c.company_name || "(名称未設定)"}</option>`).join('');
             document.getElementById('estimateItemsBody').innerHTML = `<tr><td><input type="text" placeholder="項目名" class="estimate-item-name"></td><td><input type="number" placeholder="1" value="1" class="estimate-item-qty"></td><td><input type="number" placeholder="0" value="0" class="estimate-item-price"></td><td><span class="estimate-item-amount">¥0</span></td></tr>`;
             openModal('newEstimateModal');
         }
@@ -1549,7 +1594,7 @@
             const total = amountEx + tax;
             try {
                 const job = jobs.find(j => j.id === jobId);
-                const client = clients.find(c => c.id === job.client_id);
+                if (!job) { showToast('JOBが見つかりません', 'error'); return; }
                 await sbInsert('invoices_issued', {
                     invoice_number: document.getElementById('invoiceNumber').value,
                     job_id: jobId,
