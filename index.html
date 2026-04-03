@@ -1343,9 +1343,9 @@
                 items.push({
                     type: 'job',
                     id: job.id,
-                    number: job.job_number,
-                    name: job.job_name,
-                    client: client ? client.company_name : '─',
+                    number: job.job_number || '─',
+                    name: job.job_name || '(無題)',
+                    client: client ? (client.company_name || '(名称未設定)') : '─',
                     phase: getPhaseLabel(job.status),
                     phaseStatus: job.status,
                     amount: job.amount_estimate || 0,
@@ -1362,8 +1362,8 @@
                     type: 'estimate',
                     id: est.id,
                     number: est.estimate_number || `E-${est.id.substring(0, 8)}`,
-                    name: est.title,
-                    client: client ? client.company_name : '─',
+                    name: est.title || '(無題)',
+                    client: client ? (client.company_name || '(名称未設定)') : '─',
                     phase: '見積',
                     phaseStatus: 'estimate',
                     amount: est.total || 0,
@@ -1394,7 +1394,12 @@
                 table.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--muted);">入金データがありません</td></tr>';
                 return;
             }
-            table.innerHTML = paymentsReceived.map(payment => `<tr><td>${formatDate(payment.payment_date)}</td><td>${formatCurrency(payment.amount)}</td><td>${payment.notes || '─'}</td><td><span class="status-badge ${payment.matched_status === 'auto' ? 'status-green' : payment.matched_status === 'manual' ? 'status-blue' : 'status-red'}">${payment.matched_status}</span></td><td><button class="btn btn-sm" onclick="deletePayment('${payment.id}')">削除</button></td></tr>`).join('');
+            table.innerHTML = paymentsReceived.map(payment => {
+                const ms = payment.matched_status || 'unmatched';
+                const msClass = ms === 'auto' ? 'status-green' : ms === 'manual' ? 'status-blue' : 'status-red';
+                const msLabel = ms === 'auto' ? '自動' : ms === 'manual' ? '手動' : '未照合';
+                return `<tr><td>${formatDate(payment.payment_date)}</td><td>${formatCurrency(payment.amount)}</td><td>${payment.notes || '─'}</td><td><span class="status-badge ${msClass}">${msLabel}</span></td><td><button class="btn btn-sm" onclick="deletePayment('${payment.id}')">削除</button></td></tr>`;
+            }).join('');
         }
 
         function updateExpensesTable() {
