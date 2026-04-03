@@ -1522,7 +1522,6 @@
       document.getElementById('payMethod').value = 'bank_transfer';
       document.getElementById('payNotes').value = 'UFJ CSV手動消込';
     }
-    }
 
     // ===== CSV IMPORT (Amex) =====
     function handleAmexDrop(event) { event.preventDefault(); document.getElementById('amexDropZone').classList.remove('active'); handleAmexFile({ target: { files: event.dataTransfer.files } }); }
