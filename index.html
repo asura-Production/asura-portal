@@ -1,1825 +1,1724 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>asura 経理プラットフォーム</title>
-  <style>
-    :root {
-      --bg: #0d1117; --bg2: #161b22; --bg3: #1c2333; --bg4: #21283b;
-      --border: #30363d; --border2: #3d4450;
-      --text: #e6edf3; --text2: #8b949e; --muted: #6e7681;
-      --primary: #58a6ff; --primary-dim: #1f3a5f;
-      --green: #3fb950; --green-dim: #1a3a2a;
-      --red: #f85149; --red-dim: #3d1a1a;
-      --yellow: #d29922; --yellow-dim: #3d2e0a;
-      --purple: #bc8cff; --purple-dim: #2a1a3d;
-      --orange: #f0883e;
-      --radius: 8px; --radius-lg: 12px;
-    }
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.6; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>asura 経理プラットフォーム</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-    /* Header */
-    .header { position: sticky; top: 0; z-index: 100; background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0.75rem 1.5rem; display: flex; align-items: center; justify-content: space-between; }
-    .header-left { display: flex; align-items: center; gap: 1rem; }
-    .logo { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; }
-    .logo-sub { font-size: 0.85rem; color: var(--text2); font-weight: 400; margin-left: 0.5rem; }
-    .header-right { display: flex; align-items: center; gap: 1rem; }
-    .user-badge { background: var(--bg3); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.8rem; color: var(--text2); }
-    .invoice-link { background: var(--purple-dim); color: var(--purple); padding: 0.4rem 1rem; border-radius: 20px; font-size: 0.8rem; text-decoration: none; border: 1px solid rgba(188,140,255,0.3); }
-    .invoice-link:hover { background: rgba(188,140,255,0.2); }
+        :root {
+            --bg: #0d1117;
+            --bg2: #161b22;
+            --bg3: #1c2333;
+            --bg4: #21283b;
+            --border: #30363d;
+            --border2: #3d4450;
+            --text: #e6edf3;
+            --text2: #8b949e;
+            --muted: #6e7681;
+            --primary: #58a6ff;
+            --primary-dim: #1f3a5f;
+            --green: #3fb950;
+            --green-dim: #1a3a2a;
+            --red: #f85149;
+            --red-dim: #3d1a1a;
+            --yellow: #d29922;
+            --yellow-dim: #3d2e0a;
+            --purple: #bc8cff;
+            --purple-dim: #2a1a3d;
+            --orange: #f0883e;
+            --radius: 8px;
+            --radius-lg: 12px;
+        }
 
-    /* Quick Nav */
-    .quick-nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0.5rem 1.5rem; display: flex; gap: 0.5rem; overflow-x: auto; flex-wrap: wrap; }
-    .nav-link { color: var(--text2); text-decoration: none; font-size: 0.8rem; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.2s; white-space: nowrap; }
-    .nav-link:hover, .nav-link.active { color: var(--primary); background: var(--primary-dim); }
-    .nav-link.alert { color: var(--red); background: var(--red-dim); }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
 
-    /* Main Container */
-    .container { max-width: 1400px; margin: 0 auto; padding: 1.5rem; }
+        .header {
+            background: var(--bg2);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
 
-    /* Alert Banner */
-    .alert-banner { background: linear-gradient(135deg, var(--red-dim), #2a1520); border: 1px solid rgba(248,81,73,0.4); border-radius: var(--radius-lg); padding: 1rem 1.5rem; margin-bottom: 1.5rem; display: none; }
-    .alert-banner.show { display: flex; align-items: center; gap: 1rem; }
-    .alert-badge { background: var(--red); color: #fff; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.75rem; font-weight: 700; }
-    .alert-text { font-size: 0.9rem; color: var(--text); }
+        .header-logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
 
-    /* Dashboard Grid */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
-    .kpi-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem; transition: transform 0.2s; cursor: default; }
-    .kpi-card:hover { transform: translateY(-2px); }
-    .kpi-card .label { font-size: 0.75rem; color: var(--text2); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem; }
-    .kpi-card .value { font-size: 1.5rem; font-weight: 700; }
-    .kpi-card .sub { font-size: 0.7rem; color: var(--muted); margin-top: 0.3rem; }
-    .kpi-card.danger .value { color: var(--red); }
-    .kpi-card.success .value { color: var(--green); }
-    .kpi-card.warning .value { color: var(--yellow); }
+        .header-logo-main {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--primary);
+        }
 
-    /* P&L Summary Row */
-    .pl-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 2rem; }
-    .pl-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.2rem; }
-    .pl-card h4 { font-size: 0.8rem; color: var(--text2); margin-bottom: 0.8rem; }
-    .pl-bar { height: 6px; background: var(--bg4); border-radius: 3px; margin-top: 0.5rem; overflow: hidden; }
-    .pl-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+        .header-logo-sub {
+            font-size: 12px;
+            color: var(--text2);
+        }
 
-    /* Section */
-    .section { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 1.5rem; overflow: hidden; }
-    .section-header { padding: 1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; border-bottom: 1px solid var(--border); }
-    .section-header:hover { background: var(--bg3); }
-    .section-header-left { display: flex; align-items: center; gap: 0.8rem; }
-    .section-icon { font-size: 1.2rem; }
-    .section-title { font-size: 1rem; font-weight: 600; }
-    .section-badge { background: var(--primary-dim); color: var(--primary); padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; }
-    .section-actions { display: flex; gap: 0.5rem; }
-    .section-content { padding: 1rem 1.5rem; }
-    .section-content.collapsed { display: none; }
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
 
-    /* Tabs */
-    .tabs { display: flex; gap: 0.25rem; margin-bottom: 1rem; background: var(--bg); border-radius: var(--radius); padding: 0.25rem; }
-    .tab-btn { background: none; border: none; color: var(--text2); padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.8rem; transition: all 0.2s; }
-    .tab-btn.active { background: var(--bg3); color: var(--text); }
-    .tab-btn:hover { color: var(--text); }
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
+        .year-selector {
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 8px 12px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+        }
 
-    /* Buttons */
-    .btn { border: none; padding: 0.5rem 1rem; border-radius: var(--radius); cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.4rem; }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: #4090e0; }
-    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
-    .btn-secondary:hover { background: var(--bg4); }
-    .btn-danger { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
-    .btn-danger:hover { background: rgba(248,81,73,0.2); }
-    .btn-success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
-    .btn-success:hover { background: rgba(63,185,80,0.2); }
-    .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-    .btn-icon { background: none; border: none; cursor: pointer; font-size: 1rem; padding: 0.3rem; border-radius: 4px; transition: background 0.2s; }
-    .btn-icon:hover { background: var(--bg4); }
+        .year-selector:hover {
+            background: var(--bg4);
+            border-color: var(--border2);
+        }
 
-    /* Search & Filter Bar */
-    .toolbar { display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; align-items: center; }
-    .search-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.8rem; border-radius: var(--radius); font-size: 0.8rem; flex: 1; min-width: 200px; }
-    .search-input:focus { outline: none; border-color: var(--primary); }
-    .filter-select { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem; border-radius: var(--radius); font-size: 0.8rem; }
+        .btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            background: var(--bg3);
+            color: var(--text);
+            border-radius: var(--radius);
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    /* Tables */
-    .table-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
-    th { text-align: left; padding: 0.6rem 0.8rem; color: var(--text2); font-weight: 600; border-bottom: 1px solid var(--border); white-space: nowrap; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
-    td { padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--border); }
-    tr:hover { background: var(--bg3); }
-    .empty-state { text-align: center; color: var(--muted); padding: 2rem !important; }
-    .action-btns { display: flex; gap: 0.3rem; }
+        .btn:hover {
+            background: var(--bg4);
+            border-color: var(--border2);
+        }
 
-    /* Badges */
-    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-weight: 600; }
-    .badge-blue { background: var(--primary-dim); color: var(--primary); }
-    .badge-green { background: var(--green-dim); color: var(--green); }
-    .badge-red { background: var(--red-dim); color: var(--red); }
-    .badge-yellow { background: var(--yellow-dim); color: var(--yellow); }
-    .badge-purple { background: var(--purple-dim); color: var(--purple); }
-    .badge-gray { background: var(--bg4); color: var(--text2); }
+        .btn-primary {
+            background: var(--primary);
+            color: var(--bg);
+            border-color: var(--primary);
+        }
 
-    /* Modal */
-    .modal-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); z-index: 200; justify-content: center; align-items: flex-start; padding: 3rem 1rem; overflow-y: auto; }
-    .modal-overlay.show { display: flex; }
-    .modal-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); width: 100%; max-width: 640px; }
-    .modal-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
-    .modal-header-title { font-size: 1rem; font-weight: 600; }
-    .modal-close { background: none; border: none; color: var(--text2); cursor: pointer; font-size: 1.2rem; }
-    .modal-body { padding: 1.5rem; max-height: 70vh; overflow-y: auto; }
-    .modal-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; justify-content: flex-end; gap: 0.5rem; }
+        .btn-primary:hover {
+            background: #79b8ff;
+        }
 
-    /* Form */
-    .form-group { margin-bottom: 1rem; }
-    .form-label { display: block; font-size: 0.8rem; color: var(--text2); margin-bottom: 0.3rem; }
-    .form-input, .form-select, .form-textarea { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.5rem 0.8rem; border-radius: var(--radius); font-size: 0.85rem; }
-    .form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: var(--primary); }
-    .form-textarea { min-height: 80px; resize: vertical; }
-    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .form-check { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; }
+        .btn-success {
+            background: var(--green);
+            color: var(--bg);
+            border-color: var(--green);
+        }
 
-    /* Line Items */
-    .line-items { border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 1rem; }
-    .line-item { display: grid; grid-template-columns: 2fr 80px 60px 100px 100px 40px; gap: 0.5rem; padding: 0.5rem; align-items: center; border-bottom: 1px solid var(--border); }
-    .line-item:last-child { border-bottom: none; }
-    .line-item input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.4rem; border-radius: 4px; font-size: 0.8rem; width: 100%; }
-    .line-item-amount { text-align: right; font-size: 0.8rem; color: var(--text2); }
-    .line-item-remove { background: none; border: none; color: var(--red); cursor: pointer; font-size: 1rem; }
+        .btn-success:hover {
+            background: #56d364;
+        }
 
-    /* Totals */
-    .totals { background: var(--bg3); border-radius: var(--radius); padding: 1rem; margin-bottom: 1rem; }
-    .total-row { display: flex; justify-content: space-between; padding: 0.3rem 0; font-size: 0.85rem; }
-    .total-row.grand { font-size: 1.1rem; font-weight: 700; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.3rem; }
+        .btn-danger {
+            background: var(--red);
+            color: var(--bg);
+            border-color: var(--red);
+        }
 
-    /* Drag & Drop */
-    .drop-zone { border: 2px dashed var(--border); border-radius: var(--radius-lg); padding: 2rem; text-align: center; color: var(--muted); cursor: pointer; transition: all 0.3s; }
-    .drop-zone:hover, .drop-zone.active { border-color: var(--primary); background: var(--primary-dim); color: var(--primary); }
+        .btn-danger:hover {
+            background: #ff7b72;
+        }
 
-    /* Toast */
-    .toast { position: fixed; bottom: 2rem; right: 2rem; padding: 0.8rem 1.5rem; border-radius: var(--radius); z-index: 300; font-size: 0.85rem; animation: slideIn 0.3s ease; }
-    .toast.success { background: var(--green-dim); color: var(--green); border: 1px solid rgba(63,185,80,0.3); }
-    .toast.error { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,81,73,0.3); }
-    @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
 
-    /* Export Panel */
-    .export-panel { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
-    .export-option { display: flex; align-items: center; gap: 1rem; padding: 0.8rem; border-radius: var(--radius); cursor: pointer; transition: background 0.2s; }
-    .export-option:hover { background: var(--bg4); }
-    .export-icon { font-size: 1.5rem; }
-    .export-info h5 { font-size: 0.85rem; }
-    .export-info p { font-size: 0.75rem; color: var(--text2); }
+        .badge-admin {
+            background: var(--red-dim);
+            color: var(--red);
+        }
 
-    /* Responsive */
-    @media (max-width: 768px) {
-      .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
-      .pl-row { grid-template-columns: 1fr; }
-      .form-row { grid-template-columns: 1fr; }
-      .line-item { grid-template-columns: 1fr 1fr; }
-      .header { flex-wrap: wrap; gap: 0.5rem; }
-    }
-  </style>
+        .invoice-manager-btn {
+            background: var(--purple-dim);
+            border: 1px solid var(--purple);
+            color: var(--purple);
+        }
+
+        .invoice-manager-btn:hover {
+            background: var(--purple);
+            color: var(--bg);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            padding: 16px 24px;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg2);
+        }
+
+        .tab-button {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .tab-button:hover {
+            color: var(--text);
+        }
+
+        .tab-button.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+            padding: 24px;
+            animation: fadeIn 0.2s;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .kpi-card {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            padding: 16px;
+            border-radius: var(--radius-lg);
+        }
+
+        .kpi-label {
+            font-size: 13px;
+            color: var(--text2);
+            margin-bottom: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--text);
+        }
+
+        .kpi-subtext {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .kpi-card.green {
+            border-left: 4px solid var(--green);
+        }
+
+        .kpi-card.red {
+            border-left: 4px solid var(--red);
+        }
+
+        .kpi-card.orange {
+            border-left: 4px solid var(--orange);
+        }
+
+        .kpi-card.blue {
+            border-left: 4px solid var(--primary);
+        }
+
+        .kpi-card.purple {
+            border-left: 4px solid var(--purple);
+        }
+
+        .project-container {
+            display: flex;
+            gap: 24px;
+            height: calc(100vh - 300px);
+        }
+
+        .project-sidebar {
+            width: 250px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-search {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .sidebar-search input {
+            width: 100%;
+            padding: 8px 12px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            font-size: 13px;
+        }
+
+        .sidebar-search input::placeholder {
+            color: var(--muted);
+        }
+
+        .client-list {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .client-item {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .client-item:hover {
+            background: var(--bg3);
+        }
+
+        .client-item.active {
+            background: var(--primary-dim);
+            color: var(--primary);
+            border-left: 3px solid var(--primary);
+        }
+
+        .sidebar-footer {
+            padding: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .project-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .project-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .project-filters input,
+        .project-filters select {
+            padding: 8px 12px;
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            font-size: 13px;
+        }
+
+        .project-filters input::placeholder {
+            color: var(--muted);
+        }
+
+        .project-table {
+            flex: 1;
+            overflow-y: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            background: var(--bg2);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        thead {
+            background: var(--bg3);
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            color: var(--text2);
+            font-weight: 500;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tbody tr:hover {
+            background: var(--bg3);
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .status-yellow {
+            background: var(--yellow-dim);
+            color: var(--yellow);
+        }
+
+        .status-blue {
+            background: var(--primary-dim);
+            color: var(--primary);
+        }
+
+        .status-orange {
+            background: rgba(240, 136, 62, 0.1);
+            color: var(--orange);
+        }
+
+        .status-green {
+            background: var(--green-dim);
+            color: var(--green);
+        }
+
+        .status-red {
+            background: var(--red-dim);
+            color: var(--red);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-sm {
+            padding: 4px 8px;
+            font-size: 11px;
+            border-radius: 4px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 600px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 20px;
+        }
+
+        .modal-close:hover {
+            color: var(--text);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-dim);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .cash-flow-tabs {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .cash-flow-tab {
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            color: var(--text2);
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+        }
+
+        .cash-flow-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+
+        .upload-area {
+            background: var(--bg2);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-lg);
+            padding: 32px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 24px;
+        }
+
+        .upload-area:hover {
+            border-color: var(--primary);
+            background: var(--bg3);
+        }
+
+        .upload-area.active {
+            border-color: var(--primary);
+            background: var(--primary-dim);
+        }
+
+        .upload-text {
+            font-size: 14px;
+            color: var(--text2);
+            margin: 8px 0;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            color: var(--text);
+            z-index: 2000;
+            animation: slideUp 0.3s;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .toast.success {
+            border-left: 4px solid var(--green);
+        }
+
+        .toast.error {
+            border-left: 4px solid var(--red);
+        }
+
+        .toast.warning {
+            border-left: 4px solid var(--yellow);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .confirm-dialog {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1001;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-dialog.active {
+            display: flex;
+        }
+
+        .confirm-box {
+            background: var(--bg2);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .confirm-text {
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: var(--text);
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+
+        .estimate-items-table {
+            width: 100%;
+            margin-bottom: 16px;
+            border-collapse: collapse;
+        }
+
+        .estimate-items-table th {
+            background: var(--bg3);
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .estimate-items-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .estimate-items-table input {
+            width: 100%;
+            padding: 6px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .project-container {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .project-sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 200px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg3);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border2);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--border);
+        }
+    </style>
 </head>
 <body>
-
-  <!-- Header -->
-  <div class="header">
-    <div class="header-left">
-      <div class="logo">asura<span class="logo-sub">経理プラットフォーム</span></div>
-    </div>
-    <div class="header-right">
-      <a href="https://asura-invoice-manager.vercel.app" target="_blank" class="invoice-link">📤 Invoice Manager（支払管理）</a>
-      <div class="user-badge" id="userName">Admin</div>
-    </div>
-  </div>
-
-  <!-- Quick Nav -->
-  <div class="quick-nav">
-    <a class="nav-link active" onclick="scrollTo('dashboardSection')">📊 ダッシュボード</a>
-    <a class="nav-link" onclick="scrollTo('jobsSection')">💼 JOB管理</a>
-    <a class="nav-link" onclick="scrollTo('clientsSection')">🏢 クライアント</a>
-    <a class="nav-link" onclick="scrollTo('estimatesSection')">📝 見積管理</a>
-    <a class="nav-link" onclick="scrollTo('invoicesSection')">📄 請求書発行</a>
-    <a class="nav-link" onclick="scrollTo('paymentsSection')">💰 入金管理</a>
-    <a class="nav-link" onclick="scrollTo('expensesSection')">💳 経費管理</a>
-    <a class="nav-link" onclick="scrollTo('exportSection')">📤 MFエクスポート</a>
-    <a class="nav-link alert" id="alertNav" style="display:none" onclick="scrollTo('dashboardSection')">🚨 アラート <span id="alertNavCount"></span></a>
-  </div>
-
-  <div class="container">
-
-    <!-- Alert Banner -->
-    <div class="alert-banner" id="alertBanner">
-      <span class="alert-badge" id="alertBadgeCount">0件</span>
-      <span class="alert-text" id="alertText">期限超過の請求書があります</span>
-    </div>
-
-    <!-- ===== DASHBOARD (傘) ===== -->
-    <div id="dashboardSection">
-      <!-- KPI Cards -->
-      <div class="dashboard-grid">
-        <div class="kpi-card"><div class="label">📈 月次売上</div><div class="value" id="kpiRevenue">¥0</div><div class="sub">発行済み請求書合計</div></div>
-        <div class="kpi-card"><div class="label">📉 月次外注費</div><div class="value" id="kpiCost">¥0</div><div class="sub">Invoice Manager連携</div></div>
-        <div class="kpi-card"><div class="label">💳 月次経費</div><div class="value" id="kpiExpense">¥0</div><div class="sub">Amex + 固定費</div></div>
-        <div class="kpi-card success"><div class="label">💹 粗利</div><div class="value" id="kpiProfit">¥0</div><div class="sub" id="kpiProfitRate">粗利率 --%</div></div>
-        <div class="kpi-card warning"><div class="label">⏳ 未回収残高</div><div class="value" id="kpiUnpaid">¥0</div><div class="sub" id="kpiUnpaidCount">0件</div></div>
-        <div class="kpi-card danger" id="kpiOverdueCard" style="display:none"><div class="label">🚨 期限超過</div><div class="value" id="kpiOverdue">0件</div><div class="sub">要対応！</div></div>
-        <div class="kpi-card"><div class="label">💼 進行中JOB</div><div class="value" id="kpiActiveJobs">0</div><div class="sub" id="kpiTotalJobs">全0件</div></div>
-        <div class="kpi-card"><div class="label">🏢 取引先数</div><div class="value" id="kpiClientCount">0</div><div class="sub">クライアント</div></div>
-      </div>
-
-      <!-- P&L Summary -->
-      <div class="pl-row">
-        <div class="pl-card">
-          <h4>売上（入口）</h4>
-          <div class="value" id="plRevenue" style="font-size:1.3rem;font-weight:700;color:var(--green)">¥0</div>
-          <div class="pl-bar"><div class="pl-bar-fill" id="plRevenueBar" style="width:0%;background:var(--green)"></div></div>
-        </div>
-        <div class="pl-card">
-          <h4>支出（出口）</h4>
-          <div class="value" id="plExpenseTotal" style="font-size:1.3rem;font-weight:700;color:var(--red)">¥0</div>
-          <div style="font-size:0.75rem;color:var(--text2);margin-top:0.3rem">外注: <span id="plCostPart">¥0</span> / 経費: <span id="plExpensePart">¥0</span></div>
-          <div class="pl-bar"><div class="pl-bar-fill" id="plExpenseBar" style="width:0%;background:var(--red)"></div></div>
-        </div>
-        <div class="pl-card">
-          <h4>営業利益</h4>
-          <div class="value" id="plNetProfit" style="font-size:1.3rem;font-weight:700">¥0</div>
-          <div style="font-size:0.75rem;color:var(--text2);margin-top:0.3rem">利益率: <span id="plNetRate">--%</span></div>
-          <div class="pl-bar"><div class="pl-bar-fill" id="plNetBar" style="width:0%;background:var(--primary)"></div></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== JOB管理 ===== -->
-    <div class="section" id="jobsSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">💼</span>
-          <span class="section-title">JOB管理</span>
-          <span class="section-badge" id="jobsBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openJobModal()">＋ 新規JOB</button>
-        </div>
-      </div>
-      <div class="section-content" id="jobsContent">
-        <div class="toolbar">
-          <input type="text" class="search-input" id="jobsSearch" placeholder="JOB番号・案件名で検索...">
-          <select class="filter-select" id="jobsStatusFilter" onchange="renderJobs()">
-            <option value="">全ステータス</option>
-            <option value="active">進行中</option>
-            <option value="completed">完了</option>
-            <option value="cancelled">中止</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>JOB番号</th><th>案件名</th><th>クライアント</th><th>売上</th><th>外注費</th><th>粗利</th><th>ステータス</th><th>担当</th><th>操作</th></tr></thead>
-            <tbody id="jobsTableBody"><tr><td colspan="9" class="empty-state">読込中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== クライアントマスター ===== -->
-    <div class="section" id="clientsSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">🏢</span>
-          <span class="section-title">クライアントマスター</span>
-          <span class="section-badge" id="clientsBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openClientModal()">＋ 新規</button>
-        </div>
-      </div>
-      <div class="section-content" id="clientsContent">
-        <div class="toolbar">
-          <input type="text" class="search-input" id="clientsSearch" placeholder="クライアント名で検索...">
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>クライアント名</th><th>担当者</th><th>支払条件</th><th>売上合計</th><th>未回収</th><th>操作</th></tr></thead>
-            <tbody id="clientsTableBody"><tr><td colspan="6" class="empty-state">読込中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== 見積管理 ===== -->
-    <div class="section" id="estimatesSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">📝</span>
-          <span class="section-title">見積管理</span>
-          <span class="section-badge" id="estimatesBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openEstimateModal()">＋ 新規見積</button>
-        </div>
-      </div>
-      <div class="section-content" id="estimatesContent">
-        <div class="toolbar">
-          <input type="text" class="search-input" id="estimatesSearch" placeholder="見積番号・件名で検索...">
-          <select class="filter-select" id="estimatesStatusFilter" onchange="renderEstimates()">
-            <option value="">全ステータス</option>
-            <option value="draft">下書き</option>
-            <option value="sent">送付済</option>
-            <option value="approved">承認</option>
-            <option value="rejected">却下</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>見積番号</th><th>件名</th><th>クライアント</th><th>金額(税抜)</th><th>ステータス</th><th>有効期限</th><th>操作</th></tr></thead>
-            <tbody id="estimatesTableBody"><tr><td colspan="7" class="empty-state">読込中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== 請求書発行 ===== -->
-    <div class="section" id="invoicesSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">📄</span>
-          <span class="section-title">請求書発行（売上側）</span>
-          <span class="section-badge" id="invoicesBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openInvoiceModal()">＋ 新規請求書</button>
-        </div>
-      </div>
-      <div class="section-content" id="invoicesContent">
-        <div class="toolbar">
-          <input type="text" class="search-input" id="invoicesSearch" placeholder="請求書番号・クライアント名で検索...">
-          <select class="filter-select" id="invoicesStatusFilter" onchange="renderInvoices()">
-            <option value="">全ステータス</option>
-            <option value="draft">下書き</option>
-            <option value="sent">送付済</option>
-            <option value="paid">入金済</option>
-            <option value="overdue">期限超過</option>
-          </select>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>請求番号</th><th>JOB</th><th>クライアント</th><th>請求額(税込)</th><th>発行日</th><th>支払期日</th><th>ステータス</th><th>操作</th></tr></thead>
-            <tbody id="invoicesTableBody"><tr><td colspan="8" class="empty-state">読込中...</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== 入金管理 ===== -->
-    <div class="section" id="paymentsSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">💰</span>
-          <span class="section-title">入金管理</span>
-          <span class="section-badge" id="paymentsBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openPaymentModal()">＋ 新規入金</button>
-        </div>
-      </div>
-      <div class="section-content" id="paymentsContent">
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchPaymentTab('list',this)">入金一覧</button>
-          <button class="tab-btn" onclick="switchPaymentTab('csv',this)">UFJ CSV取込</button>
-          <button class="tab-btn" onclick="switchPaymentTab('matching',this)">自動消込</button>
-        </div>
-        <div id="payments-list" class="tab-content active">
-          <div class="toolbar">
-            <input type="text" class="search-input" id="paymentsSearch" placeholder="振込人名・クライアント名で検索...">
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>入金日</th><th>振込人</th><th>金額</th><th>対象請求書</th><th>消込</th><th>操作</th></tr></thead>
-              <tbody id="paymentsTableBody"><tr><td colspan="6" class="empty-state">読込中...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-        <div id="payments-csv" class="tab-content">
-          <div class="drop-zone" id="ufjDropZone" onclick="document.getElementById('ufjFileInput').click()" ondrop="handleUFJDrop(event)" ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')">
-            📁 UFJ入出金明細CSVをドラッグ＆ドロップ<br><span style="font-size:0.8rem">またはクリックして選択</span>
-            <input type="file" id="ufjFileInput" style="display:none" accept=".csv" onchange="handleUFJFile(event)">
-          </div>
-          <div id="ufjPreview" style="display:none;margin-top:1rem"></div>
-        </div>
-        <div id="payments-matching" class="tab-content">
-          <div id="matchingResults"><p class="empty-state">CSVを取り込むと自動マッチング結果が表示されます</p></div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== 経費管理 ===== -->
-    <div class="section" id="expensesSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">💳</span>
-          <span class="section-title">経費管理</span>
-          <span class="section-badge" id="expensesBadge">0</span>
-        </div>
-        <div class="section-actions">
-          <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openExpenseModal()">＋ 新規経費</button>
-        </div>
-      </div>
-      <div class="section-content" id="expensesContent">
-        <div class="tabs">
-          <button class="tab-btn active" onclick="switchExpenseTab('list',this)">経費一覧</button>
-          <button class="tab-btn" onclick="switchExpenseTab('amex',this)">Amex CSV取込</button>
-          <button class="tab-btn" onclick="switchExpenseTab('categories',this)">カテゴリマスター</button>
-        </div>
-        <div id="expenses-list" class="tab-content active">
-          <div class="toolbar">
-            <input type="text" class="search-input" id="expensesSearch" placeholder="支払先・カテゴリで検索...">
-            <select class="filter-select" id="expensesCategoryFilter" onchange="renderExpenses()">
-              <option value="">全カテゴリ</option>
-              <option value="家賃">家賃</option>
-              <option value="通信費">通信費</option>
-              <option value="ソフトウェア">ソフトウェア</option>
-              <option value="交通費">交通費</option>
-              <option value="会議費">会議費</option>
-              <option value="接待交際費">接待交際費</option>
-              <option value="消耗品費">消耗品費</option>
-              <option value="その他">その他</option>
-            </select>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>日付</th><th>カテゴリ</th><th>支払先</th><th>金額</th><th>支払方法</th><th>JOB</th><th>MF</th><th>操作</th></tr></thead>
-              <tbody id="expensesTableBody"><tr><td colspan="8" class="empty-state">読込中...</td></tr></tbody>
-            </table>
-          </div>
-        </div>
-        <div id="expenses-amex" class="tab-content">
-          <div class="drop-zone" id="amexDropZone" onclick="document.getElementById('amexFileInput').click()" ondrop="handleAmexDrop(event)" ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')">
-            💳 Amex利用明細CSVをドラッグ＆ドロップ<br><span style="font-size:0.8rem">またはクリックして選択</span>
-            <input type="file" id="amexFileInput" style="display:none" accept=".csv" onchange="handleAmexFile(event)">
-          </div>
-          <div id="amexPreview" style="display:none;margin-top:1rem"></div>
-        </div>
-        <div id="expenses-categories" class="tab-content">
-          <p style="color:var(--text2);font-size:0.85rem;margin-bottom:1rem">加盟店名とカテゴリの紐付けを登録すると、次回CSVインポート時に自動分類されます。</p>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>加盟店名（パターン）</th><th>カテゴリ</th><th>操作</th></tr></thead>
-              <tbody id="categoryMasterBody"><tr><td colspan="3" class="empty-state">カテゴリマスター未登録</td></tr></tbody>
-            </table>
-          </div>
-          <button class="btn btn-secondary btn-sm" onclick="addCategoryRule()" style="margin-top:0.5rem">＋ ルール追加</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- ===== MFエクスポート ===== -->
-    <div class="section" id="exportSection">
-      <div class="section-header" onclick="toggleSection(this)">
-        <div class="section-header-left">
-          <span class="section-icon">📤</span>
-          <span class="section-title">MoneyForwardエクスポート</span>
-        </div>
-      </div>
-      <div class="section-content" id="exportContent">
-        <p style="color:var(--text2);font-size:0.85rem;margin-bottom:1.5rem">MoneyForward仕訳帳インポート形式でCSVをエクスポートします。Besoさんへの共有用。</p>
-        <div class="form-row" style="margin-bottom:1rem">
-          <div class="form-group">
-            <label class="form-label">対象月</label>
-            <input type="month" class="form-input" id="exportMonth">
-          </div>
-          <div class="form-group">
-            <label class="form-label">エクスポート対象</label>
-            <div style="display:flex;gap:1rem;margin-top:0.3rem">
-              <label class="form-check"><input type="checkbox" id="exportRevenue" checked> 売上（請求書）</label>
-              <label class="form-check"><input type="checkbox" id="exportCost" checked> 外注費</label>
-              <label class="form-check"><input type="checkbox" id="exportExpenses" checked> 経費</label>
+    <div class="header">
+        <div class="header-logo">
+            <div>
+                <div class="header-logo-main">asura</div>
+                <div class="header-logo-sub">経理プラットフォーム</div>
             </div>
-          </div>
         </div>
-        <div style="display:flex;gap:0.5rem">
-          <button class="btn btn-primary" onclick="exportMFCSV()">📥 CSVエクスポート</button>
-          <button class="btn btn-secondary" onclick="previewMFCSV()">👁 プレビュー</button>
+        <div class="header-controls">
+            <select id="yearSelector" class="year-selector">
+                <option value="2025">2025年度</option>
+                <option value="2026" selected>2026年度</option>
+                <option value="2027">2027年度</option>
+                <option value="2028">2028年度</option>
+            </select>
+            <a href="https://asura-invoice-manager.vercel.app" target="_blank" class="btn invoice-manager-btn">
+                <span>📋</span> Invoice Manager
+            </a>
+            <div class="badge badge-admin">Admin</div>
         </div>
-        <div id="mfPreview" style="display:none;margin-top:1rem"></div>
-      </div>
     </div>
 
-  </div>
-
-  <!-- ===== MODALS ===== -->
-
-  <!-- Job Modal -->
-  <div class="modal-overlay" id="jobModal" onclick="if(event.target===this)closeModal('jobModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="jobModalTitle">新規 JOB</div><button class="modal-close" onclick="closeModal('jobModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">JOB番号 *</label><input type="text" class="form-input" id="jobNumber" placeholder="JOB-2026-001"></div>
-        <div class="form-group"><label class="form-label">案件名 *</label><input type="text" class="form-input" id="jobTitle"></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="jobClient"></select></div>
-          <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="jobStaff"></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">売上額（税抜）</label><input type="number" class="form-input" id="jobRevenue" min="0"></div>
-          <div class="form-group"><label class="form-label">外注予算</label><input type="number" class="form-input" id="jobBudget" min="0"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="jobStatus"><option value="active">進行中</option><option value="completed">完了</option><option value="cancelled">中止</option></select></div>
-          <div class="form-group"><label class="form-label">元見積</label><select class="form-select" id="jobEstimate"><option value="">なし</option></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">開始日</label><input type="date" class="form-input" id="jobStartDate"></div>
-          <div class="form-group"><label class="form-label">終了日</label><input type="date" class="form-input" id="jobEndDate"></div>
-        </div>
-        <div class="form-group"><label class="form-label">説明</label><textarea class="form-textarea" id="jobDescription"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="jobDeleteBtn" style="display:none;margin-right:auto" onclick="deleteJob()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('jobModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveJob()">保存</button>
-      </div>
+    <div class="tabs">
+        <button class="tab-button active" data-tab="dashboard">ダッシュボード</button>
+        <button class="tab-button" data-tab="projects">案件管理</button>
+        <button class="tab-button" data-tab="cashflow">入出金・経費</button>
     </div>
-  </div>
 
-  <!-- Client Modal -->
-  <div class="modal-overlay" id="clientModal" onclick="if(event.target===this)closeModal('clientModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="clientModalTitle">新規 クライアント</div><button class="modal-close" onclick="closeModal('clientModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-group"><label class="form-label">クライアント名 *</label><input type="text" class="form-input" id="clientName"></div>
-        <div class="form-group"><label class="form-label">短縮名</label><input type="text" class="form-input" id="clientNameShort" placeholder="○○社"></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">担当者名</label><input type="text" class="form-input" id="clientContact"></div>
-          <div class="form-group"><label class="form-label">メール</label><input type="email" class="form-input" id="clientEmail"></div>
+    <div id="dashboard" class="tab-content active">
+        <div class="kpi-grid">
+            <div class="kpi-card green">
+                <div class="kpi-label">月次売上</div>
+                <div class="kpi-value" id="kpi-revenue">¥0</div>
+                <div class="kpi-subtext" id="kpi-revenue-subtext">前月比: ─</div>
+            </div>
+            <div class="kpi-card purple">
+                <div class="kpi-label">月次外注費</div>
+                <div class="kpi-value" id="kpi-subcontract">¥0</div>
+                <div class="kpi-subtext">Invoice Manager連携</div>
+            </div>
+            <div class="kpi-card orange">
+                <div class="kpi-label">月次経費</div>
+                <div class="kpi-value" id="kpi-expenses">¥0</div>
+                <div class="kpi-subtext" id="kpi-expenses-subtext">Amex登録済み</div>
+            </div>
+            <div class="kpi-card green">
+                <div class="kpi-label">粗利</div>
+                <div class="kpi-value" id="kpi-profit">¥0</div>
+                <div class="kpi-subtext" id="kpi-profit-percent">─</div>
+            </div>
+            <div class="kpi-card red">
+                <div class="kpi-label">未回収残高</div>
+                <div class="kpi-value" id="kpi-unpaid">¥0</div>
+                <div class="kpi-subtext" id="kpi-unpaid-subtext">0件の未払い</div>
+            </div>
+            <div class="kpi-card blue">
+                <div class="kpi-label">進行中JOB</div>
+                <div class="kpi-value" id="kpi-active-jobs">0</div>
+                <div class="kpi-subtext" id="kpi-active-jobs-subtext">0件</div>
+            </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">電話番号</label><input type="tel" class="form-input" id="clientPhone"></div>
-          <div class="form-group"><label class="form-label">支払条件</label><input type="text" class="form-input" id="clientPaymentTerms" placeholder="月末締め翌月末払い"></div>
-        </div>
-        <div class="form-group"><label class="form-label">住所</label><input type="text" class="form-input" id="clientAddress"></div>
-        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="clientNotes"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="clientDeleteBtn" style="display:none;margin-right:auto" onclick="deleteClient()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('clientModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveClient()">保存</button>
-      </div>
     </div>
-  </div>
 
-  <!-- Estimate Modal -->
-  <div class="modal-overlay" id="estimateModal" onclick="if(event.target===this)closeModal('estimateModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="estimateModalTitle">新規 見積</div><button class="modal-close" onclick="closeModal('estimateModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">見積番号 *</label><input type="text" class="form-input" id="estNumber" placeholder="EST-2026-001"></div>
-          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="estStatus"><option value="draft">下書き</option><option value="sent">送付済</option><option value="approved">承認</option><option value="rejected">却下</option></select></div>
+    <div id="projects" class="tab-content">
+        <div class="project-container">
+            <div class="project-sidebar">
+                <div class="sidebar-search">
+                    <input type="text" id="clientSearch" placeholder="クライアント検索...">
+                </div>
+                <div class="client-list" id="clientList"></div>
+                <div class="sidebar-footer">
+                    <button class="btn btn-primary" style="width: 100%;" onclick="openNewClientModal()">+ 新規クライアント</button>
+                </div>
+            </div>
+
+            <div class="project-main">
+                <div class="project-actions">
+                    <button class="btn btn-success" onclick="openNewJobModal()">+ 新規JOB</button>
+                    <button class="btn btn-success" onclick="openNewEstimateModal()">+ 新規見積</button>
+                </div>
+
+                <div class="project-filters">
+                    <input type="text" id="projectSearch" placeholder="案件名や番号で検索...">
+                    <select id="phaseFilter">
+                        <option value="">すべてのフェーズ</option>
+                        <option value="見積中">見積中</option>
+                        <option value="active">進行中</option>
+                        <option value="request">請求済</option>
+                        <option value="paid">入金済</option>
+                    </select>
+                </div>
+
+                <div class="project-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>番号</th>
+                                <th>案件名</th>
+                                <th>クライアント</th>
+                                <th>フェーズ</th>
+                                <th>金額</th>
+                                <th>担当</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="projectTable">
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--muted);">データを読み込み中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
-        <div class="form-group"><label class="form-label">件名 *</label><input type="text" class="form-input" id="estTitle"></div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="estClient"></select></div>
-          <div class="form-group"><label class="form-label">担当者</label><select class="form-select" id="estStaff"></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">金額（税抜）*</label><input type="number" class="form-input" id="estAmount" min="0"></div>
-          <div class="form-group"><label class="form-label">税率</label><select class="form-select" id="estTaxRate"><option value="0.10">10%</option><option value="0.08">8%</option><option value="0">非課税</option></select></div>
-        </div>
-        <div class="form-group"><label class="form-label">有効期限</label><input type="date" class="form-input" id="estValidUntil"></div>
-        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="estNotes"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-success" id="estToJobBtn" style="display:none;margin-right:auto" onclick="convertEstimateToJob()">→ JOB化</button>
-        <button class="btn btn-danger" id="estDeleteBtn" style="display:none" onclick="deleteEstimate()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('estimateModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveEstimate()">保存</button>
-      </div>
     </div>
-  </div>
 
-  <!-- Invoice Modal -->
-  <div class="modal-overlay" id="invoiceModal" onclick="if(event.target===this)closeModal('invoiceModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="invoiceModalTitle">新規 請求書</div><button class="modal-close" onclick="closeModal('invoiceModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">請求書番号 *</label><input type="text" class="form-input" id="invNumber" placeholder="INV-2026-001"></div>
-          <div class="form-group"><label class="form-label">ステータス</label><select class="form-select" id="invStatus"><option value="draft">下書き</option><option value="sent">送付済</option><option value="paid">入金済</option><option value="overdue">期限超過</option></select></div>
+    <div id="cashflow" class="tab-content">
+        <div class="cash-flow-tabs">
+            <button class="cash-flow-tab active" data-cashflow-tab="payments">入金管理</button>
+            <button class="cash-flow-tab" data-cashflow-tab="expenses">経費管理</button>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">JOB</label><select class="form-select" id="invJob"></select></div>
-          <div class="form-group"><label class="form-label">クライアント *</label><select class="form-select" id="invClient"></select></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">請求額（税抜）*</label><input type="number" class="form-input" id="invAmount" min="0"></div>
-          <div class="form-group"><label class="form-label">消費税</label><input type="number" class="form-input" id="invTax" min="0" readonly style="background:var(--bg3)"></div>
-        </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">発行日 *</label><input type="date" class="form-input" id="invIssueDate"></div>
-          <div class="form-group"><label class="form-label">支払期日 *</label><input type="date" class="form-input" id="invDueDate"></div>
-        </div>
-        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="invNotes"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="invDeleteBtn" style="display:none;margin-right:auto" onclick="deleteInvoice()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('invoiceModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveInvoice()">保存</button>
-      </div>
+
+        <div id="payments-section" class="cashflow-section">
+            <h3 style="margin-bottom: 16px;">UFJ CSV アップロード</h3>
+            <div class="upload-area" id="paymentUploadArea">
+                <div>📤 ファイルをドラッグして放す、またはクリックして選択</div>
+                <div class="upload-text">対応形式: CSV</div>
+                <input type="file" id="paymentFileInput" accept=".csv" style="display: none;">
+            </div>
+
+            <h3 style="margin-bottom: 16px;">入金一覧</h3>
+            <div class="project-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>入金日</th>
+                            <th>金額</th>
+                            <th>摘要</th>
+                            <th>マッチング</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="paymentsTable">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--muted);">入金データがありませ         p                           </t                   </thead>
+                    </t>
+                </d        </div>
+    </d  <div id="payments-subtext" class="cashflow-section">
+    ;
+             <h3 style="margin-bottom: 16px;">UFJ CSV録�ップロード</h3>
+            <div class="upload-area" id="payments-subterea">
+                <div>📤 ファイルをドラッグして放す、またはクリックして選択</div>
+                <div class="upload-text">対応形式: CSV</div>
+                <input type="file" id="payments-subteut" accept=".csv" style="display: none;">
+            </div>
+
+            <h3 style="margin-bottom: 16px;">入金䮡理</h3>
+            <div class="project-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>入金�>
+ 付                           <th>マッチ�/th>
+�/h3                           <th>マッヂ�テゴ���                           <th>金額</th>
+                            <th>摘要</th>
+                            <th>マッ�/th>
+                        </tr>
+                    </thead>
+                    <tbody id="payments-subtex
+                        <tr>
+                            <td colspan="5" styl6="text-align: center; color: var(--muted);">入金㮡理<��がありませ         p                           </t                   </thead>
+                    </t>
+                </d        </div>
     </div>
-  </div>
+    </div id="casprojectooteraymentntModal()">+ �    <div class="cash-flontent {
+            <div class="projecteader {
+                <div class="projectitle {
+    ">��ライアント</butto��み<                <input tclass="cash-fllose:hover ck="openNewover ">+ �'ntModal()">+ �')">&times;n>
+            <button            <div class="kpi-carody {
+                <div class="projectoup {
+                    <table>
 
-  <!-- Payment Modal -->
-  <div class="modal-overlay" id="paymentModal" onclick="if(event.target===this)closeModal('paymentModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="paymentModalTitle">新規 入金</div><button class="modal-close" onclick="closeModal('paymentModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">入金日 *</label><input type="date" class="form-input" id="payDate"></div>
-          <div class="form-group"><label class="form-label">金額 *</label><input type="number" class="form-input" id="payAmount" min="0"></div>
+     projectoup {進行�企業>
+  *</進�               <input type="text" id="clientSearch"Name" projectoup {iccept=lder="案件�企業>
+ ��㇑ナ�               </div>
+                <div class="client-w {
+                    <table>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�/th>
+ 者>
+   進�               <input put type="text" id="clientSearch"Cr">
+ct" projectoup {iccept=lder="案件�/th>
+ 者>
+                 <table>
+               <div clble>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�メ/h3>
+���</bグ�ス  進�               <input put type="text" iemaillientSearch"Emailliprojectoup {iccept=lder="案件�email@example.com                <table>
+               <div cl                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�住所</進�               <input type="text" id="clientSearch"Addrclickprojectoup {iccept=lder="案件�住所��㇑ナ�               </div>
+                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�支/div>
+条v>
+  進�               <input type="text" id="clientSearch"PTable"Termickprojectoup {iccept=lder="案件�例：翌��貜�/div>
+            </div>
+                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�備考  進�               <input ta {
+     entSearch"Noteickprojectoup {a {
+    t=lder="案件�備考��㇑ナ�     >
+  {
+               </div>
+            </div>
         </div>
-        <div class="form-group"><label class="form-label">対象請求書</label><select class="form-select" id="payInvoice"><option value="">選択...</option></select></div>
-        <div class="form-group"><label class="form-label">UFJ参照番号</label><input type="text" class="form-input" id="payBankRef"></div>
-        <div class="form-group"><label class="form-label">消込方法</label><select class="form-select" id="payMatchMethod"><option value="manual">手動</option><option value="auto">自動（CSV）</option></select></div>
-        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="payNotes"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="payDeleteBtn" style="display:none;margin-right:auto" onclick="deletePayment()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('paymentModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="savePayment()">保存</button>
-      </div>
-    </div>
-  </div>
+v class="client-ooter {
+                </div>
+ class="btn btn-suck="openNewover ">+ �'ntModal()">+ �')">�</h�/th>
+<���n>
+                </div>
 
-  <!-- Expense Modal -->
-  <div class="modal-overlay" id="expenseModal" onclick="if(event.target===this)closeModal('expenseModal')">
-    <div class="modal-card" onclick="event.stopPropagation()">
-      <div class="modal-header"><div class="modal-header-title" id="expenseModalTitle">新規 経費</div><button class="modal-close" onclick="closeModal('expenseModal')">✕</button></div>
-      <div class="modal-body">
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">発生日 *</label><input type="date" class="form-input" id="expDate"></div>
-          <div class="form-group"><label class="form-label">カテゴリ *</label><select class="form-select" id="expCategory">
-            <option value="">選択...</option><option value="家賃">家賃</option><option value="通信費">通信費</option><option value="ソフトウェア">ソフトウェア</option><option value="交通費">交通費</option><option value="会議費">会議費</option><option value="接待交際費">接待交際費</option><option value="消耗品費">消耗品費</option><option value="その他">その他</option>
-          </select></div>
+class="btn btn-success" onclick="openNewsaventModal()��覸�み<  
+            <button            <di    </div>
+    </div id="casprojectooteraymentntMl()">+ �    <div class="cash-flontent {
+            <div class="projecteader {
+                <div class="projectitle {
+    ">��ラ�JOB>
+ 成                <input tclass="cash-fllose:hover ck="openNewover ">+ �'ntMl()">+ �')">&times;n>
+            <button            <div class="kpi-carody {
+                <div class="projectoup {
+                    <table>
+
+     projectoup {進行䂤アント</butto *</進�               <input tid="phaseFijobodal()ckprojectoup {id="ph                    <option value="">すべ�/div>
+>
+   
+                    </select>
+                </div>
+
+               <div class="projectoup {
+                    <table>
+
+     projectoup {進行䐍</th>
+  *</進�               <input type="text" id="clientSjobName" projectoup {iccept=lder="案件名や番号㇑ナ�               </div>
+                <div class="client-w {
+                    <table>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�/th>
+ 者  進�               <input put tid="phaseFijobStaffckprojectoup {id="ph                    <optionput tvalue="">すべ�/div>
+>
+   
+                    </seleciv>
+  
+                </div>
+iv>
+                <div clble>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行中</op/th>
+   進�               <input put type="text" inumb   aseFijobAmou()ckprojectoup {iccept=lder="案件�0""">す�0                <table>
+               <div cl                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�備考  進�               <input ta {
+     entSjobNoteickprojectoup {a {
+    t=lder="案件�備考��㇑ナ�     >
+  {
+               </div>
+            </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">支払先</label><input type="text" class="form-input" id="expVendor"></div>
-          <div class="form-group"><label class="form-label">金額（税込）*</label><input type="number" class="form-input" id="expAmount" min="0"></div>
+v class="client-ooter {
+                </div>
+ class="btn btn-suck="openNewover ">+ �'ntMl()">+ �')">�</h�/th>
+<���n>
+                </div>
+
+class="btn btn-success" onclick="openNewsaventMl()���>
+ 成  
+            <button            <di    </div>
+    </div id="casprojectooteraymentntMeModal()">+ �    <div class="cash-flontent {
+            <div class="projecteader {
+                <div class="projectitle {
+    ">��ラ㸭</opt
+ 成                <input tclass="cash-fllose:hover ck="openNewover ">+ �'ntMeModal()">+ �')">&times;n>
+            <button            <div class="kpi-carody {
+                <div class="projectoup {
+                    <table>
+
+     projectoup {進行䂤アント</butto *</進�               <input tid="phaseFie-items-odal()ckprojectoup {id="ph                    <option value="">すべ�/div>
+>
+   
+                    </select>
+                </div>
+
+               <div class="projectoup {
+                    <table>
+
+     projectoup {進行中</op��み���ー� *</進�               <input type="text" id="clientSe-items-T    "kprojectoup {iccept=lder="案件席</op��み���ー�            </div>
+                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行中</op/��目  進�               <input taput {projecte-items-table input                     <tr>
+                               <tr>
+                                <th>番号</��目>
+                                <th>クラ�数量                               <th>クラ�単価                               <th>金額</th>
+                                <th                       </thead>
+                        <tbody id="projecte-items-Ible B               <div cl     <tbody id                            <td colspa>type="text" id="clilder="案件�/��目>
+ "{projecte-items-table-iewp  >
+                         <tr>
+   colspa>type="text" inumb   alder="案件�1""">す�1"{projecte-items-table-qty  >
+                         <tr>
+   colspa>type="text" inumb   alder="案件�0""">す�0 {projecte-items-table-pricp  >
+                         <tr>
+   colspa>t" st{projecte-items-table-amou()civ>
+  nvoic                           </tr>
+                        </tbody>
+                    </table>
+                </div>
+able>class="btn btn-success"mck="openNewaddE-items-Ible��規�行��辿�加n>
+                </div>
+            </div>
+iv>
+ ss="client-w {
+                    <table>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�税率 (%)  進�               <input put type="text" inumb   aseFie-items-TaxRms-"kprojectoup {iccept=lder="案件�10""">す�10""min�0 {max�100                <table>
+               <div clble>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�有効期限  進�               <input put type="text" idms-"kseFie-items-ValidUntilliprojectoup {iccept               <table>
+               <div cl                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�備考  進�               <input ta {
+     entSe-items-Noteickprojectoup {a {
+    t=lder="案件�備考��㇑ナ�     >
+  {
+               </div>
+            </div>
         </div>
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">支払方法</label><select class="form-select" id="expPayMethod"><option value="amex">Amexカード</option><option value="bank_transfer">銀行振込</option><option value="cash">現金</option></select></div>
-          <div class="form-group"><label class="form-label">JOB紐付き</label><select class="form-select" id="expJob"><option value="">なし</option></select></div>
+v class="client-ooter {
+                </div>
+ class="btn btn-suck="openNewover ">+ �'ntMeModal()">+ �')">�</h�/th>
+<���n>
+                </div>
+
+class="btn btn-success" onclick="openNewsaventMeModal()���>
+ 成  
+            <button            <di    </div>
+    </div id="casprojectooterayment-manage">+ �    <div class="cash-flontent {
+            <div class="projecteader {
+                <div class="projectitle {
+    ">��</opt��発行                <input tclass="cash-fllose:hover ck="openNewover ">+ �'-manage">+ �')">&times;n>
+            <button            <div class="kpi-carody {
+                <div class="projectoup {
+                    <table>
+
+     projectoup {進行䂤アント</butto</進�               <input type="text" id="clientS-manageodal()ckprojectoup {iccept=   donl                </t>
+              <div class="projectoup {
+                    <table>
+
+     projectoup {進行䐍</th>
+ </進�               <input type="text" id="clientS-manageJobName" projectoup {iccept=   donl                </t>
+              <div class="projectoup {                   <table>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行丈</op/th>
+   進�               <input put type="text" id="clientS-manageNumb   aprojectoup {iccept=lder="案件帇�動生成                <table>
+               <div clble>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�発行>
+   進�               <input put type="text" idms-"kseFi-manageIssueDms-"kprojectoup {iccept               <table>
+               <div cl                <div class="client-w {
+                    <table>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�税抜/th>
+   進�               <input put type="text" inumb   aseFi-manageAmou()Ex aprojectoup {iccept=">す�0                <table>
+               <div clble>
+ss="projectoup {
+                    <table>ble>
+
+     projectoup {進行�税>
+   進�               <input put type="text" inumb   aseFi-manageTax aprojectoup {iccept=">す�0                <table>
+               <div cl                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�支/di期限  進�               <input type="text" idms-"kseFi-manageDueDms-"kprojectoup {iccept               <ta                <div class="client-w {
+ 
+                    <table>
+
+     projectoup {進行�備考  進�               <input ta {
+     entS-manageNoteickprojectoup {a {
+    t=lder="案件�備考��㇑ナ�     >
+  {
+               </div>
+            </div>
         </div>
-        <div class="form-group"><label class="form-label">備考</label><textarea class="form-textarea" id="expNotes"></textarea></div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-danger" id="expDeleteBtn" style="display:none;margin-right:auto" onclick="deleteExpense()">削除</button>
-        <button class="btn btn-secondary" onclick="closeModal('expenseModal')">キャンセル</button>
-        <button class="btn btn-primary" onclick="saveExpense()">保存</button>
-      </div>
-    </div>
-  </div>
+v class="client-ooter {
+                </div>
+ class="btn btn-suck="openNewover ">+ �'-manage">+ �')">�</h�/th>
+<���n>
+                </div>
 
-  <script>
-    // ===== Configuration =====
-    const SUPABASE_URL = 'https://ymtojnmkvypbhmeqaszm.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';
+class="btn btn-success" onclick="openNewsave Manage��覸��行  
+            <button            <di    </div>
+    </div id="casproject-dialog.activelientSedialogDctivel   <div class="cash-fl-box {
+            <div class="project-text {
+    lientSedialogT�応�確認��択<くだ�iv>
+            </div>
+ ss="cash-fl-box {
+  {
+                </div>
+ class="btn btn-suck="openNewover Cbox {
+()">�</h�/th>
+<���n>
+                </div>
 
-    // ===== Global State =====
-    let clients = [], jobs = [], estimates = [], invoicesIssued = [], paymentsReceived = [], expenses = [];
-    let staffMembers = [];
-    let editingId = null;
-    let categoryRules = JSON.parse(localStorage.getItem('categoryRules') || '[]');
+class="btn btn-successd    rck="openNewobox {
+A
+    ()">削除  
+            <button            <di    </div>
+    </div id=scrip           obost SB_URL = '/asura-iymtojnmkvypbhmeqaszm.supabase.co/re-i/v1';         obost SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InltdG9qbm1rdnlwYmhtZXFhc3ptIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0MDI0NzIsImV4cCI6MjA4NDk3ODQ3Mn0.X88gOaFprlNrbRD14C26r-fWYu7KSGZXu9I4bC6p8CU';         obost SB_HEADERS =        backgro'apikey': SB_KEY,      backgro'Authorizslide': `Be   r ${SB_KEY}`,      backgro'C{
+    -Txt"': 'apppenslide/jsde',      backgro'Prefer': 'return=repre-   slide'      bac};       <h3let earch"s = [], btex = [], e-items-x = [], -managesIssued = [], sTable">Received = [], s-subtex = [], staffMemb  x = [];      <h3let d>2026�odal()Id = null,: po    Ye   = 度<, sditingId = null,:subpx;
+Cbox {
+A
+     = null;       <h3async fun
+     sbFetch(     , sTramx = {}         .projeclet url = `${SB_URL}/${     }`       color: vaost queryPartx = [];      <h33333if (sTramx.d>2026) queryPartx.push(`d>2026=${encodeURIComponl()�sTramx.d>2026)}`);      <h33333if (sTramx.eq) Obble".l()ries(sTramx.eq)ow {Each(([key,=">�]) => queryPartx.push(`${key}=eq.${encodeURIComponl()�">�)}`));      <h33333if (sTramx.">
+   ) queryPartx.push(sTramx.">
+   );      <h33333if (sTramx.
+      queryPartx.push(`
+    =${sTramx.
+    }`);      <h33333if (queryPartx.length) url += '?' + queryPartx.join('&');      <h33333tr         paddingor: vaost re-p = await fetch(url, { method: 'GET', {
+    s: SB_HEADERS }            opacityif (!re-p.ok) th    new E    (`HTTP ${re-p.red {
+}`);      <h333333333return await re-p.jsde();      <h33333} nslch (err         .projecor: vaosole{
+    ('sbFetch 
+    :', err ;      <h333333333showTrnin('��があ㾼み中...<エ��し�', '
+    ');      <h333333333return [];      <h33333   }
 
-    // ===== Utility Functions =====
-    function esc(s) { if (!s) return ''; const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
-    function fmt(n) { return '¥' + Number(n || 0).toLocaleString('ja-JP'); }
-    function fmtDate(d) { return d ? new Date(d).toLocaleDateString('ja-JP') : ''; }
-    function today() { return new Date().toISOString().split('T')[0]; }
+        ::-webkasync fun
+     sbIbtert(     , shfl         .projectr         paddingor: vaost re-p = await fetch(`${SB_URL}/${     }`, { method: 'POST', {
+    s: SB_HEADERS,     : JSON.rerx;
+ify(shfl  }            opacityif (!re-p.ok) th    new E    (`HTTP ${re-p.red {
+}`);      <h333333333return await re-p.jsde();      <h33333} nslch (err         .projecor: vaosole{
+    ('sbIbtert 
+    :', err ;      <h333333333th    err;      <h33333   }
 
-    function showToast(msg, type = 'success') {
-      const t = document.createElement('div');
-      t.className = `toast ${type}`;
-      t.textContent = msg;
-      document.body.appendChild(t);
-      setTimeout(() => t.remove(), 3000);
-    }
+        ::-webkasync fun
+     sbUpdms-(     , id, shfl         .projectr         paddingor: vaost re-p = await fetch(`${SB_URL}/${     }?enteq.${id}`, { method: 'PATCH', {
+    s: SB_HEADERS,     : JSON.rerx;
+ify(shfl  }            opacityif (!re-p.ok) th    new E    (`HTTP ${re-p.red {
+}`);      <h333333333return await re-p.jsde();      <h33333} nslch (err         .projecor: vaosole{
+    ('sbUpdms- 
+    :', err ;      <h333333333th    err;      <h33333   }
 
-    // ===== Supabase REST API =====
-    const headers = { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}`, 'Content-Type': 'application/json' };
+        ::-webkasync fun
+     sbD>20s-(     , id         .projectr         paddingor: vaost re-p = await fetch(`${SB_URL}/${     }?enteq.${id}`, { method: 'DELETE', {
+    s: SB_HEADERS }            opacityif (!re-p.ok) th    new E    (`HTTP ${re-p.red {
+}`);      <h333333333return true;      <h33333} nslch (err         .projecor: vaosole{
+    ('sbD>20s- 
+    :', err ;      <h333333333th    err;      <h33333   }
 
-    async function sbFetch(table, opts = {}) {
-      let url = `${SUPABASE_URL}/rest/v1/${table}?`;
-      if (opts.select) url += `select=${opts.select}&`;
-      if (opts.filter) url += `${opts.filter}&`;
-      if (opts.order) url += `order=${opts.order}&`;
-      try {
-        const r = await fetch(url, { headers });
-        return r.ok ? await r.json() : [];
-      } catch(e) { console.error(`Fetch ${table}:`, e); return []; }
-    }
+        ::-webkfun
+     showTrnin(msg,text" = '" oncli'         .projecvaost 
+     = docuble".c   teEleble"('  <');      <h33333trningbtn bName = `
+     ${ xt"}`       color: trning    C{
+     = msg       color: docuble".    argeubpChild(trnin);      <h33333setTimeout(() => trningremove��, 3000    }
 
-    async function sbInsert(table, data) {
-      try {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
-          method: 'POST', headers: { ...headers, 'Prefer': 'return=representation' },
-          body: JSON.stringify(data)
-        });
-        return r.ok ? await r.json() : null;
-      } catch(e) { console.error('Insert error:', e); return null; }
-    }
+        ::-webkfun
+     Esti">+ �id    docuble".getEleble"ById�id gbtn b/div.add(' data-');3   }
 
-    async function sbUpdate(table, id, data) {
-      try {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
-          method: 'PATCH', headers, body: JSON.stringify(data)
-        });
-        return r.ok;
-      } catch(e) { console.error('Update error:', e); return false; }
-    }
+    fun
+     over ">+ �id    docuble".getEleble"ById�id gbtn b/div.remove�' data-');3   }
 
-    async function sbDelete(table, id) {
-      try {
-        const r = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE', headers });
-        return r.ok;
-      } catch(e) { console.error('Delete error:', e); return false; }
-    }
+    fun
+     showCbox {
+(    , ">
+            .projecdocuble".getEleble"ById�'edialogT��')g    C{
+     =            padding:ubpx;
+Cbox {
+A
+     = ">
+          color: docuble".getEleble"ById�'edialogDctive' gbtn b/div.add(' data-');  }
 
-    // ===== Section Toggle =====
-    function toggleSection(header) {
-      const content = header.nextElementSibling;
-      content.classList.toggle('collapsed');
-    }
+       }
 
-    function scrollTo(id) {
-      document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
-      document.querySelectorAll('.nav-link').forEach(a => a.classList.remove('active'));
-      event?.target?.classList.add('active');
-    }
+    fun
+     over Cbox {
+()        .projecdocuble".getEleble"ById�'edialogDctive' gbtn b/div.remove�' data-');      padding:ubpx;
+Cbox {
+A
+     = null;  }
 
-    function closeModal(id) { document.getElementById(id).classList.remove('show'); editingId = null; }
+       }
 
-    // ===== Badge Helpers =====
-    function statusBadge(status) {
-      const map = {
-        'active': 'blue', '進行中': 'blue', 'draft': 'gray', '下書き': 'gray',
-        'sent': 'yellow', '送付済': 'yellow', 'approved': 'green', '承認': 'green',
-        'completed': 'green', '完了': 'green', 'paid': 'green', '入金済': 'green',
-        'rejected': 'red', '却下': 'red', 'overdue': 'red', '期限超過': 'red',
-        'cancelled': 'red', '中止': 'red',
-      };
-      const label = { 'active': '進行中', 'completed': '完了', 'cancelled': '中止', 'draft': '下書き', 'sent': '送付済', 'approved': '承認', 'rejected': '却下', 'paid': '入金済', 'overdue': '期限超過' };
-      return `<span class="badge badge-${map[status]||'gray'}">${esc(label[status]||status)}</span>`;
-    }
+    fun
+     obox {
+A
+    ()        .projecvver Cbox {
+();      <h33333if (subpx;
+Cbox {
+A
+    )g:ubpx;
+Cbox {
+A
+    (    }
 
-    // ===== CLIENT FUNCTIONS =====
-    async function loadClients() {
-      // Use partners table with is_client flag
-      clients = await sbFetch('partners', { order: 'created_at.desc', filter: 'is_client=eq.true' });
-      renderClients();
-      updateClientDropdowns();
-    }
+        ::-webkasync fun
+     a">
+ llDhfl()        .projecvaost redrtOfYe   = `${ po    Ye  }-01-01`       color: vaost ubpOfYe   = `${ po    Ye  }-12-31`       color: vaost dms->
+     = `and(c   ted_a".gte.${redrtOfYe  },c   ted_a".lte.${ubpOfYe  })`       color: varch"s = await sbFetch('sTrtn  s', { eq: { is_varch": true3} }            opabtex = await sbFetch('btex', { ">
+   : dms->
+     }            opae-items-x = await sbFetch('e-items-x', { ">
+   : dms->
+     }            opa-managesIssued = await sbFetch('-manages_issued', { ">
+   : dms->
+     }            opasTable">Received = await sbFetch('sTable">_received', { ">
+   : dms->
+     }            opae-subtex = await sbFetch('e-subtex', { ">
+   : dms->
+     }            opastaffMemb  x = await sbFetch('staff_memb  x');      paddingupdms-UI(    }
 
-    function renderClients() {
-      const tbody = document.getElementById('clientsTableBody');
-      const search = (document.getElementById('clientsSearch').value || '').toLowerCase();
-      let filtered = clients.filter(c => !search || (c.name && c.name.toLowerCase().includes(search)));
+        ::-webkfun
+     updms-UI(         .projecupdms-Dd" class();      <h33333updms-Cst"></div();      <h33333updms-Pable">
+    ();      <h33333updms-PTable">
+    ();      <h33333updms-E-subtex
+    (    }
 
-      document.getElementById('clientsBadge').textContent = clients.length;
+        ::-webkfun
+     updms-Dd" class()        .projecvaost  po    M{
+ h = new Dl()��.getM{
+ h() +         }
+     vaost m{
+ hRsubtex = -managesIssued.">
+   (-ma =>        paddingor: vaost -maDl() = new Dl()�-ma.issue_dms-);      <h333333333return -maDl().getM{
+ h() +   ===  po    M{
+ h && -ma.red {
+ === '���';      <h33333}).reduce((sum, -ma) => sum + �-ma.total_amou() || 0�,              opavaost m{
+ hE-subtex = e-subtex.">
+   (e-s =>        paddingor: vaost e-sDl() = new Dl()�e-s.e-subte_dms-);      <h333333333return e-sDl().getM{
+ h() +   ===  po    M{
+ h;      <h33333}).reduce((sum, e-s) => sum + �e-s.amou() || 0�,              opavaost percen = m{
+ hRsubtex - m{
+ hE-subtex           opavaost percenP>─</ = m{
+ hRsubtex > 0 ? ((percen / m{
+ hRsubtex) * onc)g oF    (1)           backgrovaost subtexTotal = -managesIssued.">
+   (-ma => ['draft', '-   ', '    due'].includes(-ma.red {
+)).reduce((sum, -ma) => sum + �-ma.total_amou() || 0�,              opavaost  data-JtexCou() =abtex.">
+   (bte => bte.red {
+ === ' data-').length       color: docuble".getEleble"ById�'enue-subtex')g    C{
+     = oup atCpo   cy(m{
+ hRsubtex)       color: docuble".getEleble"ById�'enuee-subtex')g    C{
+     = oup atCpo   cy(m{
+ hE-subtex)       color: docuble".getEleble"ById�'enuepercen')g    C{
+     = oup atCpo   cy(percen)       color: docuble".getEleble"ById�'enuepercent">─</')g    C{
+     = `${percenP>─</}%`       color: docuble".getEleble"ById�'enuesubtex')g    C{
+     = oup atCpo   cy(subtexTotal)       color: docuble".getEleble"ById�'enuesubtext">0件�')g    C{
+     = `${-managesIssued.">
+   (-ma => ['draft', '-   ', '    due'].includes(-ma.red {
+)).length}��払い</div>
+`       color: docuble".getEleble"ById�'enuejobs-subtex')g    C{
+     =  data-JtexCou()       color: docuble".getEleble"ById�'enuejobs-subtext">0件�')g    C{
+     = `${ data-JtexCou()}���`   }
 
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">データなし</td></tr>'; return; }
+        ::-webkfun
+     updms-Cst"></div()        .projecvaost d="c = docuble".getEleble"ById�'est"></div');      paddingvaost rplace = docuble".getEleble"ById�'est">< place')g">す.toLowerCas ();      <h33333vaost ">
+   ed = varch"s.">
+   (c => c.company_iewp.toLowerCas ().includes(rplace));      <h33333d="c.inn  HTML = ">
+   ed.map(varch" => `ass="client-list" iable ${r>2026�odal()Id === varch".id ? ' data-'   ''}ck="openNews>2026odal()�'${ arch".id}')">${ arch".company_iewp}    </`).join(''    }
 
-      tbody.innerHTML = filtered.map(c => {
-        const revenue = invoicesIssued.filter(i => i.client_id === c.id && i.status === 'paid').reduce((s, i) => s + (i.amount_ex_tax || 0), 0);
-        const unpaid = invoicesIssued.filter(i => i.client_id === c.id && i.status !== 'paid' && i.status !== 'draft').reduce((s, i) => s + (i.amount_ex_tax || 0), 0);
-        return `<tr>
-          <td><strong>${esc(c.name)}</strong></td>
-          <td>${esc(c.contact_name || c.name_kana || '-')}</td>
-          <td>${esc(c.payment_terms || '-')}</td>
-          <td>${fmt(revenue)}</td>
-          <td>${unpaid > 0 ? `<span style="color:var(--yellow)">${fmt(unpaid)}</span>` : '-'}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openClientModal('${c.id}')">✏️</button>
-            <button class="btn-icon" onclick="deleteClientById('${c.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
+        ::-webkfun
+     s>2026odal()�id         .projecd>2026�odal()Id = r>2026�odal()Id === id ? null            grid-teupdms-Cst"></div();      <h33333updms-Pable">
+    ();      <h3    ::-webkfun
+     updms-Pable">
+    ()        .projecvaost 
+put {= docuble".getEleble"ById�'Table">
+    ');      paddingvaost rplace = docuble".getEleble"ById�'Search" place')g">す.toLowerCas ();      <h33333vaost lter">
+     = docuble".getEleble"ById�'Ster">
+    ')g">す;      <h33333det -ble  = [];      <h33333btex." {Each(bte =>        paddingor: vaost varch" = varch"s.">nd(c => c.id === bte.varch"_id);      <h333333333vaost redff = rtaffMemb  x.">nd(s => s.id === bte.staff_id);      <h333333333if (r>2026�odal()Id && bte.varch"_id !== r>2026�odal()Id)3return;      <h333333333if (r>lace && !bte.bte_iewp.toLowerCas ().includes(rplace) && !bte.bte_iumb  .toLowerCas ().includes(rplace))3return;      <h333333333if (lter">
+     && (lter">
+     === ' data-' ? bte.red {
+ !== ' data-' : true))3return;      <h333333333ible .push(       paddingor:      xt"  'bte',      backgro33333333id: bte.id,      backgro33333333iumb  : bte.bte_iumb  ,      backgro33333333iewp: bte.bte_iewp,      backgro33333333varch": varch" ?  arch".company_iewp   '─',      backgro33333333lter": getPter"L���(bte.red {
+),      backgro33333333lter"Sed {
+: bte.red {
+,      backgro33333333amou(): bte.amou()_e-items- || 0,      backgro33333333staff: redff ? redff.iewp   '─',      backgro33333333shfl: bte      backgro3333}            opa}            opae-items-x." {Each(est =>        paddingor: vaost varch" = varch"s.">nd(c => c.id === eingbtrch"_id);      <h333333333if (r>2026�odal()Id && eingbtrch"_id !== r>2026�odal()Id)3return;      <h333333333if (r>lace && !eing
+    .toLowerCas ().includes(rplace))3return;      <h333333333if (lter">
+     && lter">
+     !== '��</optio')3return;      <h333333333ible .push(       paddingor:      xt"  'e-items-',      backgro33333333id: eingid,      backgro33333333iumb  : einge-items-_iumb   || `E-${eingid.">0rerx;
+0, 08)}`,      backgro33333333iewp: eing
+    ,      backgro33333333varch": varch" ?  arch".company_iewp   '─',      backgro33333333lter": '��</op',      backgro33333333lter"Sed {
+: 'e-items-',      backgro33333333amou(): eing
+otal || 0,      backgro33333333staff: '─',      backgro33333333shfl: ein      backgro3333}            opa}            opaif (ible .length === 0         .projecor: 
+put .inn  HTML = 'id  span="7" style="text-align: center; color: var(--muted);">データを読おませ         p          ';      <h333333333return;      <h33333       to {
+   put .inn  HTML = ible .map(able => `ad  spa>${able.iumb  }      pa>${able.iewp}      pa>${able. arch"}      pa>t" st{projectred {
+-adge-a${getPter"Croje(able.lter"Sed {
+)}">${able.lter"}  nvoic      pa>${oup atCpo   cy(able.amou())}      pa>${able.staff}      pa>tss="client-">
+     {
+      ${able.ext" === 'e-items-' ? `>class="btn btn-success"mck="openNewvao   teModal()Tol()�'${able.id}')">JOBに変換  
+      `   `>class="btn btn-success"mck="openNewEstiImanage">+ �'${able.id}')">��</opt��  
+      `}>class="btn btn-success"mck="openNewd>20s-Ible�'${able.ext"}', '${able.id}')">削除  
+          </          `).join(''    }
 
-    function openClientModal(id = null) {
-      editingId = id;
-      ['clientName','clientNameShort','clientContact','clientEmail','clientPhone','clientPaymentTerms','clientAddress','clientNotes'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('clientDeleteBtn').style.display = 'none';
-      document.getElementById('clientModalTitle').textContent = '新規 クライアント';
+        ::-webkfun
+     getPter"L���(red {
+)        .projecvaost d���x = { '��</optio': '��</op', ' data-': '��</optio', '">請�': '��</optio', 'btex': '��</optio', 'comp20s-x': '���了', 'cancell-x': '�</h�/th>
+<���'c};  <h333333333return d���x[red {
+] || red {
+   }
 
-      if (id) {
-        const c = clients.find(x => x.id === id);
-        if (c) {
-          document.getElementById('clientModalTitle').textContent = 'クライアント編集';
-          document.getElementById('clientName').value = c.name || '';
-          document.getElementById('clientNameShort').value = c.name_short || c.name_kana || '';
-          document.getElementById('clientContact').value = c.contact_name || '';
-          document.getElementById('clientEmail').value = c.email || '';
-          document.getElementById('clientPhone').value = c.tel || c.contact_phone || '';
-          document.getElementById('clientPaymentTerms').value = c.payment_terms || '';
-          document.getElementById('clientAddress').value = c.address || '';
-          document.getElementById('clientNotes').value = c.notes || '';
-          document.getElementById('clientDeleteBtn').style.display = 'block';
+        ::-webkfun
+     getPter"Croje(red {
+)        .projecvaost btn bex = { '��</optio': 'red {
+-yellow', '
+-items-': 'red {
+-yellow', ' data-': 'red {
+-aす', '">請�': 'red {
+->
+    ', 'btex': 'red {
+-
+    ', 'comp20s-x': 'red {
+-
+    ', 'cancell-x': 'red {
+- ed'c};  <h333333333return btn bex[red {
+] || 'red {
+-aす';      <h3    ::-webkfun
+     updms-PTable">
+    ()        .projecvaost 
+put {= docuble".getEleble"ById�'TTable">
+    ');      paddingif (sTable">Received.length === 0         .projecor: 
+put .inn  HTML = 'id  span="7" style="text-align: center; color: var(--muted);">入金データがありませ         p          ';      <h333333333return;      <h33333       to {
+   put .inn  HTML = sTable">Received.map(sTable" => `ad  spa>${oup atDl()�sTable".sTable"_dms-)}      pa>${oup atCpo   cy(sTable".amou())}      pa>${sTable".notei || '─'}      pa>t" st{projectred {
+-adge-a${sTable".mslched_red {
+ === ' uto' ? 'red {
+-
+    '   sTable".mslched_red {
+ === 'manual' ? 'red {
+-aす' : 'red {
+- ed'}">${sTable".mslched_red {
+}  nvoic      pa>>class="btn btn-success"mck="openNewd>20s-PTable"�'${sTable".id}')">削除  
+                `).join(''    }
+
+        ::-webkfun
+     updms-E-subtex
+    (         .projecvaost 
+put {= docuble".getEleble"ById�'s-subtex
+    ');      paddingif (e-subtex.length === 0         .projecor: 
+put .inn  HTML = 'id  span="7" styl6="text-align: center; color: var(--muted);">入金㮡理<��がありませ         p          ';      <h333333333return;      <h33333       to {
+   put .inn  HTML = e-subtex.map(e-s => `ad  spa>${oup atDl()�e-s.e-subte_dms-)}      pa>${e-s.vendor_iewp || '─'}      pa>${e-s.cms-gory || '─'}      pa>${oup atCpo   cy(e-s.amou())}      pa>${e-s.descrip     || '─'}      pa>tclass="btn btn-success"mck="openNewd>20s-E-subte�'${e-s.id}')">削除  
+                `).join(''    }
+
+        ::-webkfun
+     ClientModal()">+ 新        .projecdocuble".getEleble"ById�'earch"Name')g">す = '';      <h33333docuble".getEleble"ById�'earch"Cr">
+ct')g">す = '';      <h33333docuble".getEleble"ById�'earch"Email')g">す = '';      <h33333docuble".getEleble"ById�'earch"Addrcli')g">す = '';      <h33333docuble".getEleble"ById�'earch"PTable"Termi')g">す = '';      <h33333docuble".getEleble"ById�'earch"Notei')g">す = '';      <h33333Esti">+ �'ntModal()">+ �')   }
+
+        ::-webkasync fun
+     saventModal()��        .projecvaost name = docuble".getEleble"ById�'earch"Name')g">す.erx
+();      <h33333if (!name         .projecor: showTrnin('企業>
+ ��㇑ナ���択<くだ�iv>
+', '
+    ');      <h333333333return;      <h33333       to {
+   r         paddingor: await sbIbtert('sTrtn  s', {      backgro33333333vompany_iewp: iewp,      backgro33333333vr">
+ct_p  soer;docuble".getEleble"ById�'earch"Cr">
+ct')g">す,      backgro33333333emailr;docuble".getEleble"ById�'earch"Email')g">す,      backgro33333333addrclir;docuble".getEleble"ById�'earch"Addrcli')g">す,      backgro33333333lTable"_termir;docuble".getEleble"ById�'earch"PTable"Termi')g">す,      backgro33333333ioteir;docuble".getEleble"ById�'earch"Notei')g">す,      backgro33333333is_varch": true,      backgro33333333is_sTrtn  : false      backgro3333}            opaaaaaover ">+ �'ntModal()">+ �')           opaaaaashowTrnin('��アント</butto��み<���了', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333  nslch (err         .projecor: showTrnin('��み<に失敗��択���択�', '
+    ');      <h33333   }
+
+        ::-webkfun
+     JobModal()">+ 新        .projecdocuble".getEleble"ById�'jobName')g">す = '';      <h33333docuble".getEleble"ById�'jobAmou()')g">す = '0';      <h33333docuble".getEleble"ById�'jobNotei')g">す = '';      <h33333vaost varch"Sd="pha= docuble".getEleble"ById�'jobodal()');      paddingvarch"Sd="ph.inn  HTML = 'ivalue="">すべ�/div>
+>
+   
+      ' + varch"s.map(v => `avalue="">す�${c.id}">${c.company_iewp}  
+      `).join(''    }
+
+    3333vaost staffSd="pha= docuble".getEleble"ById�'jobStaff'    }
+
+    3333staffSd="ph.inn  HTML = 'ivalue="">すべ�/div>
+>
+   
+      ' + rtaffMemb  x.map(s => `avalue="">す�${s.id}">${s.iewp}  
+      `).join(''    }
+
+    3333Esti">+ �'ntMl()">+ �')   }
+
+        ::-webkasync fun
+     saventMl()��        .projecvaost btal()Id = docuble".getEleble"ById�'jobodal()')g">す;      <h33333vaost name = docuble".getEleble"ById�'jobName')g">す.erx
+();      <h33333if (!cdal()Id)3       .projecor: showTrnin('��アント</butto���/div>
+��択<くだ�iv>
+', '
+    ');      <h333333333return;      <h33333       to {
+  if (!name         .projecor: showTrnin('��や番号㇑ナ���択<くだ�iv>
+', '
+    ');      <h333333333return;      <h33333       to {
+   r         paddingor: vaost jobNumb   = gen  ms-JobNumb  ();      <h333333333await sbIbtert('btex', {      backgro33333333bte_iumb  : jobNumb  ,      backgro33333333bte_iewp: iewp,      backgro33333333vtrch"_id: btal()Id,      backgro33333333staff_id: docuble".getEleble"ById�'jobStaff' g">す || null,      backgro33333333amou()_e-items-  sTrseI()�docuble".getEleble"ById�'jobAmou()')g">す) || 0,      backgro33333333sta {
+: ' data-',      backgro33333333ioteir;docuble".getEleble"ById�'jobNotei')g">す      backgro3333}            opaaaaaover ">+ �'ntMl()">+ �')   }
+
+    33333333showTrnin('JOB>
+ 成���了', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333  nslch (err         .projecor: showTrnin('>
+ 成に失敗��択���択�', '
+    ');      <h33333   }
+
+        ::-webkfun
+     gen  ms-JobNumb  ()        .projecvaost now = new Dl()��;      <h33333vaost yy = Serx;
+0now.getFullYe  ()).slage�-2            opavaost mm = Serx;
+0now.getM{
+ h() +  ).padSedrt(2, '0'            opavaost m{
+ hJtex = btex.">
+   (b => b.bte_iumb  .redrtsWith(`${yy}${mm}`)).length       color: vaost rpq = Serx;
+0m{
+ hJtex +  ).padSedrt(1, '0'            opavaost 20s    = 'a';      <h33333return `${yy}${mm}-S${r>q}${20s   }`   }
+
+        ::-webkfun
+     EstimateModal()">+ 新        .projecdocuble".getEleble"ById�'e-items-T    ')g">す = '';      <h33333docuble".getEleble"ById�'e-items-TaxRms-')g">す = '10';      <h33333docuble".getEleble"ById�'e-items-Notei')g">す = '';      <h33333docuble".getEleble"ById�'e-items-ValidUntil')g">す = '';      <h33333vaost varch"Sd="pha= docuble".getEleble"ById�'e-items-odal()');      paddingvarch"Sd="ph.inn  HTML = 'ivalue="">すべ�/div>
+>
+   
+      ' + varch"s.map(v => `avalue="">す�${c.id}">${c.company_iewp}  
+      `).join(''    }
+
+    3333docuble".getEleble"ById�'e-items-Ible B   ').inn  HTML = `ad  spa>type="text" id="clilder="案件�/��目>
+ "{projecte-items-table-iewp  >
+   spa>type="text" inumb   alder="案件�1""">す�1"{projecte-items-table-qty  >
+   spa>type="text" inumb   alder="案件�0""">す�0 {projecte-items-table-pricp  >
+   spa>t" st{projecte-items-table-amou()civ>
+  nvoic          `   }
+
+    3333Esti">+ �'ntMeModal()">+ �')   }
+
+        ::-webkfun
+     addE-items-Ible��        .projecvaost 
+="pro= docuble".getEleble"ById�'e-items-Ible B   ');      <h33333vaost row = docuble".c   teEleble"('t ');      <h33333row.inn  HTML = `ada>type="text" id="clilder="案件�/��目>
+ "{projecte-items-table-iewp  >
+   spa>type="text" inumb   alder="案件�1""">す�1"{projecte-items-table-qty  >
+   spa>type="text" inumb   alder="案件�0""">す�0 {projecte-items-table-pricp  >
+   spa>t" st{projecte-items-table-amou()civ>
+  nvoic     `       color: t    argeubpChild(row)   }
+
+        ::-webkasync fun
+     saventMeModal()��        .projecvaost btal()Id = docuble".getEleble"ById�'e-items-odal()')g">す;      <h33333vaost 
+     = docuble".getEleble"ById�'e-items-T    ')g">す.erx
+();      <h33333if (!cdal()Id)3       .projecor: showTrnin('��アント</butto���/div>
+��択<くだ�iv>
+', '
+    ');      <h333333333return;      <h33333       to {
+  if (!
+    )3       .projecor: showTrnin('��</op��み���ー���㇑ナ���択<くだ�iv>
+', '
+    ');      <h333333333return;      <h33333       to {
+   r         paddingor: vaost rows = docuble".querySd="phor ll('#e-items-Ible B    t ');      <h333333333let dubtotal = 0;      <h333333333vaost e"c = await sbIbtert('e-items-x', {      backgro33333333e-items-_iumb  : `E-${Dl().now()}`,      backgro33333333vtrch"_id: btal()Id,      backgro33333333
+    : 
+    ,      backgro33333333sta {
+: 'draft',      backgro33333333subtotal: 0,      backgro33333333tax_rms-  sTrseI()�docuble".getEleble"ById�'e-items-TaxRms-')g">す) || 10,      backgro33333333tax_amou(): 0,      backgro33333333total: 0,      backgro33333333valid_untilr;docuble".getEleble"ById�'e-items-ValidUntil')g">す || null,      backgro33333333ioteir;docuble".getEleble"ById�'e-items-Notei')g">す      backgro3333}            opaaaaafor (det - = 0; - < rows.length  i++)3       .projecor:     vaost row = rows[i]           opaaaaa    vaost name = row.querySd="phor('.e-items-table-iewp')g">す;      <h33333aaaa    vaost qty = sTrseI()�row.querySd="phor('.e-items-table-qty')g">す) || 1;      <h33333aaaa    vaost pricp = sTrseI()�row.querySd="phor('.e-items-table-pricp')g">す) || 0;      <h33333aaaa    vaost amou() = qty * pricp;      <h33333aaaa    dubtotal += amou();      <h33333aaaa    if (name         .projecor:         await sbIbtert('e-items-_ible ', {      backgro3333333333333333e-items-_id: ein[0]gid,      backgro33333333aaaa    ible_iewp: iewp,      backgro3333333333333333descrip      '',      backgro3333333333333333quantity: qty,      backgro3333333333333333unit_pricp: pricp,      backgro3333333333333333amou(): amou(),      backgro3333333333333333sort_
+    : i      backgro333333333333}            opaaaaa3333}      backgro3333}      <h333333333vaost taxRms- = sTrseI()�docuble".getEleble"ById�'e-items-TaxRms-')g">す) || 10;      <h333333333vaost taxAmou() = Math.floor(dubtotal * taxRms- / onc);      <h333333333vaost total = dubtotal + taxAmou();      <h333333333await sbUpdms-('e-items-x', ein[0]gid, {      backgro33333333subtotal: subtotal,      backgro33333333tax_amou(): taxAmou(),      backgro33333333total: total      backgro3333}            opaaaaaover ">+ �'ntMeModal()">+ �')   }
+
+    33333333showTrnin('��</op>
+ 成���了', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333  nslch (err         .projecor: showTrnin('>
+ 成に失敗��択���択�', '
+    ');      <h33333   }
+
+        ::-webkfun
+     EstiImanage">+ �jobId)3       .projecvaost job = btex.">nd(b => b.id === bteId);      <h33333if (!bte)3return;      <h33333vaost varch" = varch"s.">nd(c => c.id === bte.varch"_id);      <h33333docuble".getEleble"ById�'-manageodal()')g">す = varch" ?  arch".company_iewp   '─';      <h33333docuble".getEleble"ById�'-manageJobName')g">す = bte.bte_iewp;      <h33333docuble".getEleble"ById�'-manageNumb  ')g">す = `INV-${Dl().now()}`;      <h33333docuble".getEleble"ById�'-manageIssueDms-')g">す = new Dl()��.toISOSerx;
+0).splin('T')[0];      <h33333docuble".getEleble"ById�'-manageDueDms-')g">す = '';      <h33333docuble".getEleble"ById�'-manageAmou()Ex')g">す = bte.amou()_e-items- || 0;      <h33333docuble".getEleble"ById�'-manageTax')g">す = Math.floor((bte.amou()_e-items- || 0) * 0.1);      <h33333docuble".getEleble"ById�'-manageNotei')g">す = bte.notei || '';      <h33333sditingId = bteId   }
+
+    3333Esti">+ �'-manage">+ �')   }
+
+        ::-webkasync fun
+     save Manage��3       .projecvaost jobId = sditingId;      <h33333vaost amou()Ex = sTrseI()�docuble".getEleble"ById�'-manageAmou()Ex')g">す) || 0;      <h33333vaost tax = sTrseI()�docuble".getEleble"ById�'-manageTax')g">す) || 0;      <h33333vaost total = amou()Ex + tax       color: tr         paddingor: vaost job = btex.">nd(b => b.id === bteId);      <h33333or: vaost varch" = varch"s.">nd(c => c.id === bte.varch"_id);      <h333333333await sbIbtert('-manages_issued', {      <h33333aaaa    imanage_iumb  : docuble".getEleble"ById�'-manageNumb  ')g">す,      backgro33333333bte_id: bteId,      backgro33333333vtrch"_id: bte.varch"_id,      backgro33333333sta {
+: '-   ',      backgro33333333amou()_ex_tax: amou()Ex,      backgro33333333tax_amou(): tax,      backgro33333333total_amou(): total,      backgro33333333issue_dms-: docuble".getEleble"ById�'-manageIssueDms-')g">す,      backgro33333333sue_dms-: docuble".getEleble"ById�'-manageDueDms-')g">す || null,      backgro33333333ioteir;docuble".getEleble"ById�'-manageNotei')g">す      backgro3333}            opaaaaaawait sbUpdms-('btex', bteId, {3sta {
+: '">請�'3}            opaaaaaover ">+ �'-manage">+ �')   }
+
+            showTrnin('��</opt��発行���了', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333  nslch (err         .projecor: showTrnin('���行に失敗��択���択�', '
+    ');      <h33333   }
+
+        ::-webkasync fun
+     vao   teModal()Tol()�e-items-Id)3       .projecvaost e-items- =ae-items-x.">nd(e => e.id === eintems-Id);      <h33333if (!eintems-)3return;      <h33333 r         paddingor: vaost jobNumb   = gen  ms-JobNumb  ();      <h333333333await sbIbtert('btex', {      backgro33333333bte_iumb  : jobNumb  ,      backgro33333333bte_iewp: eintems-g
+    ,      backgro33333333varch"_id: eintems-gvarch"_id,      backgro33333333sta {
+: ' data-',      backgro33333333amou()_e-items-  eintems-g
+otal,      backgro33333333ioteir;eintems-giotei      backgro3333}            opaaaaaawait sbUpdms-('e-items-x', eintems-Id, {3sta {
+: 'aoncpted'c})   }
+
+    33333333showTrnin('JOBに変換���了', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333  nslch (err         .projecor: showTrnin('変換に失敗��択���択�', '
+    ');      <h33333   }
+
+        ::-webkfun
+     d>20s-Ible�ext", id         .projecvaost -bleName = ext" === 'bte' ? '��や�' : '��</op'   }
+
+    3333showCbox {
+(`この${ableName}��㇉�除��択����か？`,kasync () =>        .projecor:  r         paddingor: aaaaawait sbD>20s-( xt" === 'bte' ? 'btex' : 'e-items-x', id);      <h333333333or: showTrnin('削除��択���択�', '" oncli'            opaaaaaaaaaawait a">
+ llDhfl();      <h33333      nslch (err         .projecor: or: showTrnin('削除���失敗��択���択�', '
+    ');      <h33333           <h33333 )   }
+
+        ::-webkfun
+     d>20s-PTable"�id         .projecdhowCbox {
+('この��ーシ㇉�除��択����か？',kasync () =>        .projecor:  r         paddingor: aaaaawait sbD>20s-('sTable">_received', id);      <h333333333or: showTrnin('削除��択���択�', '" oncli'            opaaaaaaaaaawait a">
+ llDhfl();      <h33333      nslch (err         .projecor: or: showTrnin('削除���失敗��択���択�', '
+    ');      <h33333           <h33333 )   }
+
         }
-      }
-      document.getElementById('clientModal').classList.add('show');
-    }
 
-    async function saveClient() {
-      const name = document.getElementById('clientName').value.trim();
-      if (!name) { showToast('クライアント名は必須です', 'error'); return; }
+    fun
+     d>20s-E-subte�id         .projecdhowCbox {
+('この��理<��㇉�除��択����か？',kasync () =>        .projecor:  r         paddingor: aaaaawait sbD>20s-('e-subtex', id);      <h333333333or: showTrnin('削除��択���択�', '" oncli'            opaaaaaaaaaawait a">
+ llDhfl();      <h33333      nslch (err         .projecor: or: showTrnin('削除���失敗��択���択�', '
+    ');      <h33333           <h33333 )   }
 
-      const data = {
-        name, is_client: true,
-        name_kana: document.getElementById('clientNameShort').value.trim() || null,
-        contact_name: document.getElementById('clientContact').value.trim() || null,
-        email: document.getElementById('clientEmail').value.trim() || null,
-        tel: document.getElementById('clientPhone').value.trim() || null,
-        payment_terms: document.getElementById('clientPaymentTerms').value.trim() || null,
-        address: document.getElementById('clientAddress').value.trim() || null,
-        notes: document.getElementById('clientNotes').value.trim() || null,
-      };
-
-      const ok = editingId ? await sbUpdate('partners', editingId, data) : (await sbInsert('partners', data)) !== null;
-      if (ok) { showToast('保存しました'); closeModal('clientModal'); loadClients(); }
-      else showToast('保存に失敗しました', 'error');
-    }
-
-    async function deleteClientById(id) {
-      if (confirm('このクライアントを削除しますか？')) {
-        if (await sbDelete('partners', id)) { showToast('削除しました'); loadClients(); }
-        else showToast('削除に失敗しました', 'error');
-      }
-    }
-    function deleteClient() { if (editingId) deleteClientById(editingId).then(() => closeModal('clientModal')); }
-
-    // ===== JOB FUNCTIONS =====
-    async function loadJobs() {
-      jobs = await sbFetch('jobs', { order: 'created_at.desc' });
-      renderJobs();
-      updateJobDropdowns();
-    }
-
-    function renderJobs() {
-      const tbody = document.getElementById('jobsTableBody');
-      const search = (document.getElementById('jobsSearch').value || '').toLowerCase();
-      const statusF = document.getElementById('jobsStatusFilter').value;
-      let filtered = jobs.filter(j => {
-        const ms = !search || (j.job_code||j.job_number||'').toLowerCase().includes(search) || (j.title||'').toLowerCase().includes(search);
-        const mst = !statusF || j.status === statusF;
-        return ms && mst;
-      });
-
-      document.getElementById('jobsBadge').textContent = jobs.length;
-
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="9" class="empty-state">データなし</td></tr>'; return; }
-
-      tbody.innerHTML = filtered.map(j => {
-        const client = clients.find(c => c.id === j.client_id);
-        const staff = staffMembers.find(s => s.id === j.staff_id);
-        const rev = j.revenue_ex_tax || 0;
-        const cost = j.cost_budget || 0;
-        const profit = rev - cost;
-        const profitColor = profit > 0 ? 'var(--green)' : profit < 0 ? 'var(--red)' : 'var(--text2)';
-
-        return `<tr>
-          <td>${esc(j.job_code || j.job_number)}</td>
-          <td>${esc(j.title)}</td>
-          <td>${esc(client?.name || '')}</td>
-          <td>${fmt(rev)}</td>
-          <td>${fmt(cost)}</td>
-          <td style="color:${profitColor};font-weight:600">${fmt(profit)}</td>
-          <td>${statusBadge(j.status)}</td>
-          <td>${esc(staff?.name || '')}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openJobModal('${j.id}')">✏️</button>
-            <button class="btn-icon" onclick="deleteJobById('${j.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openJobModal(id = null) {
-      editingId = id;
-      ['jobNumber','jobTitle','jobRevenue','jobBudget','jobStartDate','jobEndDate','jobDescription'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('jobStatus').value = 'active';
-      document.getElementById('jobDeleteBtn').style.display = 'none';
-      document.getElementById('jobModalTitle').textContent = '新規 JOB';
-
-      if (id) {
-        const j = jobs.find(x => x.id === id);
-        if (j) {
-          document.getElementById('jobModalTitle').textContent = 'JOB編集';
-          document.getElementById('jobNumber').value = j.job_code || j.job_number || '';
-          document.getElementById('jobTitle').value = j.title || '';
-          document.getElementById('jobClient').value = j.client_id || '';
-          document.getElementById('jobStaff').value = j.staff_id || '';
-          document.getElementById('jobRevenue').value = j.revenue_ex_tax || '';
-          document.getElementById('jobBudget').value = j.cost_budget || '';
-          document.getElementById('jobStatus').value = j.status || 'active';
-          document.getElementById('jobEstimate').value = j.estimate_id || '';
-          document.getElementById('jobStartDate').value = j.start_date || j.started_at || '';
-          document.getElementById('jobEndDate').value = j.end_date || j.deadline || '';
-          document.getElementById('jobDescription').value = j.description || '';
-          document.getElementById('jobDeleteBtn').style.display = 'block';
         }
-      }
-      document.getElementById('jobModal').classList.add('show');
-    }
 
-    async function saveJob() {
-      const code = document.getElementById('jobNumber').value.trim();
-      const title = document.getElementById('jobTitle').value.trim();
-      if (!code || !title) { showToast('JOB番号と案件名は必須です', 'error'); return; }
-
-      const data = {
-        job_code: code, title,
-        client_id: document.getElementById('jobClient').value || null,
-        staff_id: document.getElementById('jobStaff').value || null,
-        revenue_ex_tax: parseInt(document.getElementById('jobRevenue').value) || null,
-        cost_budget: parseInt(document.getElementById('jobBudget').value) || null,
-        status: document.getElementById('jobStatus').value,
-        estimate_id: document.getElementById('jobEstimate').value || null,
-        started_at: document.getElementById('jobStartDate').value || null,
-        deadline: document.getElementById('jobEndDate').value || null,
-        description: document.getElementById('jobDescription').value.trim() || null,
-      };
-
-      const ok = editingId ? await sbUpdate('jobs', editingId, data) : (await sbInsert('jobs', data)) !== null;
-      if (ok) { showToast('保存しました'); closeModal('jobModal'); loadJobs(); }
-      else showToast('保存に失敗しました', 'error');
-    }
-
-    async function deleteJobById(id) {
-      if (confirm('このJOBを削除しますか？')) {
-        if (await sbDelete('jobs', id)) { showToast('削除しました'); loadJobs(); }
-      }
-    }
-    function deleteJob() { if (editingId) deleteJobById(editingId).then(() => closeModal('jobModal')); }
-
-    // ===== ESTIMATE FUNCTIONS =====
-    async function loadEstimates() {
-      estimates = await sbFetch('estimates', { order: 'created_at.desc' });
-      renderEstimates();
-    }
-
-    function renderEstimates() {
-      const tbody = document.getElementById('estimatesTableBody');
-      const search = (document.getElementById('estimatesSearch').value || '').toLowerCase();
-      const statusF = document.getElementById('estimatesStatusFilter').value;
-      let filtered = estimates.filter(e => {
-        const ms = !search || (e.estimate_number||'').toLowerCase().includes(search) || (e.title||'').toLowerCase().includes(search);
-        const mst = !statusF || e.status === statusF;
-        return ms && mst;
-      });
-
-      document.getElementById('estimatesBadge').textContent = estimates.length;
-
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">データなし</td></tr>'; return; }
-
-      tbody.innerHTML = filtered.map(e => {
-        const client = clients.find(c => c.id === e.client_id);
-        return `<tr>
-          <td>${esc(e.estimate_number)}</td>
-          <td>${esc(e.title)}</td>
-          <td>${esc(client?.name || '')}</td>
-          <td>${fmt(e.amount_ex_tax || e.subtotal || 0)}</td>
-          <td>${statusBadge(e.status)}</td>
-          <td>${fmtDate(e.valid_until)}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openEstimateModal('${e.id}')">✏️</button>
-            ${e.status === 'approved' ? `<button class="btn btn-success btn-sm" onclick="convertEstimateToJobById('${e.id}')">→JOB</button>` : ''}
-            <button class="btn-icon" onclick="deleteEstimateById('${e.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openEstimateModal(id = null) {
-      editingId = id;
-      ['estNumber','estTitle','estAmount','estValidUntil','estNotes'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('estStatus').value = 'draft';
-      document.getElementById('estTaxRate').value = '0.10';
-      document.getElementById('estDeleteBtn').style.display = 'none';
-      document.getElementById('estToJobBtn').style.display = 'none';
-      document.getElementById('estimateModalTitle').textContent = '新規 見積';
-
-      if (id) {
-        const e = estimates.find(x => x.id === id);
-        if (e) {
-          document.getElementById('estimateModalTitle').textContent = '見積編集';
-          document.getElementById('estNumber').value = e.estimate_number || '';
-          document.getElementById('estTitle').value = e.title || '';
-          document.getElementById('estClient').value = e.client_id || '';
-          document.getElementById('estStaff').value = e.staff_id || '';
-          document.getElementById('estAmount').value = e.amount_ex_tax || e.subtotal || '';
-          document.getElementById('estTaxRate').value = e.tax_rate || '0.10';
-          document.getElementById('estStatus').value = e.status || 'draft';
-          document.getElementById('estValidUntil').value = e.valid_until || '';
-          document.getElementById('estNotes').value = e.notes || '';
-          document.getElementById('estDeleteBtn').style.display = 'block';
-          if (e.status === 'approved') document.getElementById('estToJobBtn').style.display = 'block';
-        }
-      }
-      document.getElementById('estimateModal').classList.add('show');
-    }
-
-    async function saveEstimate() {
-      const number = document.getElementById('estNumber').value.trim();
-      const title = document.getElementById('estTitle').value.trim();
-      const amount = parseInt(document.getElementById('estAmount').value);
-      if (!number || !title || !amount) { showToast('見積番号・件名・金額は必須です', 'error'); return; }
-
-      const data = {
-        estimate_number: number, title,
-        client_id: document.getElementById('estClient').value || null,
-        staff_id: document.getElementById('estStaff').value || null,
-        amount_ex_tax: amount,
-        tax_rate: parseFloat(document.getElementById('estTaxRate').value),
-        status: document.getElementById('estStatus').value,
-        valid_until: document.getElementById('estValidUntil').value || null,
-        notes: document.getElementById('estNotes').value.trim() || null,
-      };
-
-      const ok = editingId ? await sbUpdate('estimates', editingId, data) : (await sbInsert('estimates', data)) !== null;
-      if (ok) { showToast('保存しました'); closeModal('estimateModal'); loadEstimates(); }
-      else showToast('保存に失敗しました', 'error');
-    }
-
-    async function deleteEstimateById(id) {
-      if (confirm('この見積を削除しますか？')) {
-        if (await sbDelete('estimates', id)) { showToast('削除しました'); loadEstimates(); }
-      }
-    }
-    function deleteEstimate() { if (editingId) deleteEstimateById(editingId).then(() => closeModal('estimateModal')); }
-
-    async function convertEstimateToJobById(estId) {
-      const est = estimates.find(e => e.id === estId);
-      if (!est) return;
-      const jobData = {
-        job_code: est.estimate_number.replace('EST', 'JOB'),
-        title: est.title,
-        client_id: est.client_id,
-        staff_id: est.staff_id,
-        revenue_ex_tax: est.amount_ex_tax || est.subtotal,
-        status: 'active',
-        estimate_id: est.id,
-      };
-      const result = await sbInsert('jobs', jobData);
-      if (result) { showToast('見積からJOBを作成しました'); loadJobs(); }
-      else showToast('JOB作成に失敗しました', 'error');
-    }
-    function convertEstimateToJob() { if (editingId) convertEstimateToJobById(editingId).then(() => closeModal('estimateModal')); }
-
-    // ===== INVOICE FUNCTIONS =====
-    async function loadInvoices() {
-      invoicesIssued = await sbFetch('invoices_issued', { order: 'created_at.desc' });
-      // Auto-detect overdue
-      const todayStr = today();
-      invoicesIssued.forEach(inv => {
-        if (inv.due_date && inv.due_date < todayStr && inv.status !== 'paid' && inv.status !== 'draft') {
-          inv.status = 'overdue';
-        }
-      });
-      renderInvoices();
-      updateAlerts();
-    }
-
-    function renderInvoices() {
-      const tbody = document.getElementById('invoicesTableBody');
-      const search = (document.getElementById('invoicesSearch').value || '').toLowerCase();
-      const statusF = document.getElementById('invoicesStatusFilter').value;
-      let filtered = invoicesIssued.filter(i => {
-        const client = clients.find(c => c.id === i.client_id);
-        const ms = !search || (i.invoice_number||'').toLowerCase().includes(search) || (client?.name||'').toLowerCase().includes(search);
-        const mst = !statusF || i.status === statusF;
-        return ms && mst;
-      });
-
-      document.getElementById('invoicesBadge').textContent = invoicesIssued.length;
-
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">データなし</td></tr>'; return; }
-
-      tbody.innerHTML = filtered.map(i => {
-        const client = clients.find(c => c.id === i.client_id);
-        const job = jobs.find(j => j.id === i.job_id);
-        const taxAmount = i.tax_amount || Math.floor((i.amount_ex_tax || 0) * 0.1);
-        const total = (i.amount_ex_tax || 0) + taxAmount;
-        const isOverdue = i.status === 'overdue';
-
-        return `<tr style="${isOverdue ? 'background:var(--red-dim)' : ''}">
-          <td>${esc(i.invoice_number)}</td>
-          <td>${esc(job?.title || job?.job_code || '')}</td>
-          <td>${esc(client?.name || '')}</td>
-          <td><strong>${fmt(total)}</strong></td>
-          <td>${fmtDate(i.issue_date)}</td>
-          <td>${fmtDate(i.due_date)}</td>
-          <td>${statusBadge(i.status)}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openInvoiceModal('${i.id}')">✏️</button>
-            <button class="btn-icon" onclick="deleteInvoiceById('${i.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openInvoiceModal(id = null) {
-      editingId = id;
-      ['invNumber','invAmount','invTax','invIssueDate','invDueDate','invNotes'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('invStatus').value = 'draft';
-      document.getElementById('invDeleteBtn').style.display = 'none';
-      document.getElementById('invoiceModalTitle').textContent = '新規 請求書';
-
-      if (id) {
-        const i = invoicesIssued.find(x => x.id === id);
-        if (i) {
-          document.getElementById('invoiceModalTitle').textContent = '請求書編集';
-          document.getElementById('invNumber').value = i.invoice_number || '';
-          document.getElementById('invJob').value = i.job_id || '';
-          document.getElementById('invClient').value = i.client_id || '';
-          document.getElementById('invAmount').value = i.amount_ex_tax || '';
-          document.getElementById('invTax').value = i.tax_amount || Math.floor((i.amount_ex_tax||0)*0.1);
-          document.getElementById('invStatus').value = i.status === 'overdue' ? 'sent' : (i.status || 'draft');
-          document.getElementById('invIssueDate').value = i.issue_date || '';
-          document.getElementById('invDueDate').value = i.due_date || '';
-          document.getElementById('invNotes').value = i.notes || '';
-          document.getElementById('invDeleteBtn').style.display = 'block';
-        }
-      }
-      document.getElementById('invoiceModal').classList.add('show');
-    }
-
-    // Auto-calc tax when amount changes
-    document.getElementById('invAmount')?.addEventListener('input', function() {
-      document.getElementById('invTax').value = Math.floor((parseInt(this.value) || 0) * 0.1);
-    });
-
-    async function saveInvoice() {
-      const number = document.getElementById('invNumber').value.trim();
-      const amount = parseInt(document.getElementById('invAmount').value);
-      const issueDate = document.getElementById('invIssueDate').value;
-      const dueDate = document.getElementById('invDueDate').value;
-      if (!number || !amount || !issueDate || !dueDate) { showToast('請求番号・金額・発行日・支払期日は必須です', 'error'); return; }
-
-      const data = {
-        invoice_number: number,
-        job_id: document.getElementById('invJob').value || null,
-        client_id: document.getElementById('invClient').value || null,
-        amount_ex_tax: amount,
-        tax_amount: parseInt(document.getElementById('invTax').value) || Math.floor(amount * 0.1),
-        status: document.getElementById('invStatus').value,
-        issue_date: issueDate, due_date: dueDate,
-        notes: document.getElementById('invNotes').value.trim() || null,
-      };
-
-      const ok = editingId ? await sbUpdate('invoices_issued', editingId, data) : (await sbInsert('invoices_issued', data)) !== null;
-      if (ok) { showToast('保存しました'); closeModal('invoiceModal'); loadInvoices(); }
-      else showToast('保存に失敗しました（テーブルが未作成の可能性）', 'error');
-    }
-
-    async function deleteInvoiceById(id) {
-      if (confirm('この請求書を削除しますか？')) {
-        if (await sbDelete('invoices_issued', id)) { showToast('削除しました'); loadInvoices(); }
-      }
-    }
-    function deleteInvoice() { if (editingId) deleteInvoiceById(editingId).then(() => closeModal('invoiceModal')); }
-
-    // ===== PAYMENT FUNCTIONS =====
-    async function loadPayments() {
-      paymentsReceived = await sbFetch('payments_received', { order: 'created_at.desc' });
-      renderPayments();
-    }
-
-    function renderPayments() {
-      const tbody = document.getElementById('paymentsTableBody');
-      const search = (document.getElementById('paymentsSearch').value || '').toLowerCase();
-      let filtered = paymentsReceived.filter(p => {
-        return !search || (p.payer_name||'').toLowerCase().includes(search) || (p.bank_ref||'').toLowerCase().includes(search);
-      });
-
-      document.getElementById('paymentsBadge').textContent = paymentsReceived.length;
-
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">データなし</td></tr>'; return; }
-
-      tbody.innerHTML = filtered.map(p => {
-        const inv = invoicesIssued.find(i => i.id === p.invoice_id);
-        return `<tr>
-          <td>${fmtDate(p.received_date || p.payment_date)}</td>
-          <td>${esc(p.payer_name || '-')}</td>
-          <td><strong>${fmt(p.amount)}</strong></td>
-          <td>${inv ? esc(inv.invoice_number) : '-'}</td>
-          <td>${p.match_method === 'auto' ? '<span class="badge badge-green">自動</span>' : '<span class="badge badge-gray">手動</span>'}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openPaymentModal('${p.id}')">✏️</button>
-            <button class="btn-icon" onclick="deletePaymentById('${p.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openPaymentModal(id = null) {
-      editingId = id;
-      ['payDate','payAmount','payBankRef','payNotes'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('payDeleteBtn').style.display = 'none';
-      document.getElementById('paymentModalTitle').textContent = '新規 入金';
-      updatePaymentInvoiceDropdown();
-
-      if (id) {
-        const p = paymentsReceived.find(x => x.id === id);
-        if (p) {
-          document.getElementById('paymentModalTitle').textContent = '入金編集';
-          document.getElementById('payDate').value = p.received_date || p.payment_date || '';
-          document.getElementById('payAmount').value = p.amount || '';
-          document.getElementById('payInvoice').value = p.invoice_id || '';
-          document.getElementById('payBankRef').value = p.bank_ref || '';
-          document.getElementById('payMatchMethod').value = p.match_method || 'manual';
-          document.getElementById('payNotes').value = p.notes || '';
-          document.getElementById('payDeleteBtn').style.display = 'block';
-        }
-      }
-      document.getElementById('paymentModal').classList.add('show');
-    }
-
-    async function savePayment() {
-      const payDate = document.getElementById('payDate').value;
-      const amount = parseInt(document.getElementById('payAmount').value);
-      if (!payDate || !amount) { showToast('入金日と金額は必須です', 'error'); return; }
-
-      const data = {
-        received_date: payDate, amount,
-        invoice_id: document.getElementById('payInvoice').value || null,
-        bank_ref: document.getElementById('payBankRef').value.trim() || null,
-        match_method: document.getElementById('payMatchMethod').value,
-        notes: document.getElementById('payNotes').value.trim() || null,
-      };
-
-      const ok = editingId ? await sbUpdate('payments_received', editingId, data) : (await sbInsert('payments_received', data)) !== null;
-      if (ok) {
-        // If linked to invoice, mark as paid
-        if (data.invoice_id) {
-          await sbUpdate('invoices_issued', data.invoice_id, { status: 'paid', paid_date: payDate, paid_amount: amount });
-        }
-        showToast('保存しました'); closeModal('paymentModal'); loadPayments(); loadInvoices();
-      }
-      else showToast('保存に失敗しました', 'error');
-    }
-
-    async function deletePaymentById(id) {
-      if (confirm('この入金を削除しますか？')) {
-        if (await sbDelete('payments_received', id)) { showToast('削除しました'); loadPayments(); }
-      }
-    }
-    function deletePayment() { if (editingId) deletePaymentById(editingId).then(() => closeModal('paymentModal')); }
-
-    // ===== EXPENSE FUNCTIONS =====
-    async function loadExpenses() {
-      expenses = await sbFetch('expenses', { order: 'created_at.desc' });
-      renderExpenses();
-    }
-
-    function renderExpenses() {
-      const tbody = document.getElementById('expensesTableBody');
-      const search = (document.getElementById('expensesSearch').value || '').toLowerCase();
-      const catF = document.getElementById('expensesCategoryFilter').value;
-      let filtered = expenses.filter(e => {
-        const ms = !search || (e.vendor_name||'').toLowerCase().includes(search) || (e.category||'').toLowerCase().includes(search);
-        const mc = !catF || e.category === catF;
-        return ms && mc;
-      });
-
-      document.getElementById('expensesBadge').textContent = expenses.length;
-
-      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="8" class="empty-state">データなし</td></tr>'; return; }
-
-      tbody.innerHTML = filtered.map(e => {
-        const job = jobs.find(j => j.id === e.job_id);
-        return `<tr>
-          <td>${fmtDate(e.date)}</td>
-          <td><span class="badge badge-purple">${esc(e.category)}</span></td>
-          <td>${esc(e.vendor_name || '-')}</td>
-          <td>${fmt(e.amount)}</td>
-          <td>${esc(e.payment_method || '-')}</td>
-          <td>${job ? esc(job.job_code || job.title) : '-'}</td>
-          <td>${e.mf_exported ? '<span class="badge badge-green">済</span>' : '<span class="badge badge-gray">未</span>'}</td>
-          <td class="action-btns">
-            <button class="btn-icon" onclick="openExpenseModal('${e.id}')">✏️</button>
-            <button class="btn-icon" onclick="deleteExpenseById('${e.id}')">🗑️</button>
-          </td>
-        </tr>`;
-      }).join('');
-    }
-
-    function openExpenseModal(id = null) {
-      editingId = id;
-      ['expDate','expVendor','expAmount','expNotes'].forEach(f => document.getElementById(f).value = '');
-      document.getElementById('expCategory').value = '';
-      document.getElementById('expPayMethod').value = 'amex';
-      document.getElementById('expDeleteBtn').style.display = 'none';
-      document.getElementById('expenseModalTitle').textContent = '新規 経費';
-
-      if (id) {
-        const e = expenses.find(x => x.id === id);
-        if (e) {
-          document.getElementById('expenseModalTitle').textContent = '経費編集';
-          document.getElementById('expDate').value = e.date || '';
-          document.getElementById('expCategory').value = e.category || '';
-          document.getElementById('expVendor').value = e.vendor_name || '';
-          document.getElementById('expAmount').value = e.amount || '';
-          document.getElementById('expPayMethod').value = e.payment_method || 'amex';
-          document.getElementById('expJob').value = e.job_id || '';
-          document.getElementById('expNotes').value = e.notes || '';
-          document.getElementById('expDeleteBtn').style.display = 'block';
-        }
-      }
-      document.getElementById('expenseModal').classList.add('show');
-    }
-
-    async function saveExpense() {
-      const date = document.getElementById('expDate').value;
-      const category = document.getElementById('expCategory').value;
-      const amount = parseInt(document.getElementById('expAmount').value);
-      if (!date || !category || !amount) { showToast('日付・カテゴリ・金額は必須です', 'error'); return; }
-
-      const data = {
-        date, category, amount,
-        vendor_name: document.getElementById('expVendor').value.trim() || null,
-        payment_method: document.getElementById('expPayMethod').value,
-        job_id: document.getElementById('expJob').value || null,
-        notes: document.getElementById('expNotes').value.trim() || null,
-        mf_exported: false,
-      };
-
-      const ok = editingId ? await sbUpdate('expenses', editingId, data) : (await sbInsert('expenses', data)) !== null;
-      if (ok) { showToast('保存しました'); closeModal('expenseModal'); loadExpenses(); }
-      else showToast('保存に失敗しました（テーブルが未作成の可能性）', 'error');
-    }
-
-    async function deleteExpenseById(id) {
-      if (confirm('この経費を削除しますか？')) {
-        if (await sbDelete('expenses', id)) { showToast('削除しました'); loadExpenses(); }
-      }
-    }
-    function deleteExpense() { if (editingId) deleteExpenseById(editingId).then(() => closeModal('expenseModal')); }
-
-    // ===== CSV IMPORT (UFJ) =====
-    function handleUFJDrop(event) { event.preventDefault(); document.getElementById('ufjDropZone').classList.remove('active'); handleUFJFile({ target: { files: event.dataTransfer.files } }); }
-    function handleUFJFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => parseUFJCSV(e.target.result);
-      reader.readAsText(file, 'shift_jis');
-    }
-
-    function parseUFJCSV(content) {
-      const lines = content.split('\n').filter(l => l.trim());
-      if (lines.length < 2) { showToast('有効なCSVではありません', 'error'); return; }
-      const headers = lines[0].split(',');
-      const data = lines.slice(1).map(line => line.split(','));
-
-      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">UFJ入出金明細プレビュー（${data.length}件）</h4>`;
-      html += '<div class="table-wrap"><table><thead><tr>' + headers.map(h => `<th>${esc(h.trim())}</th>`).join('') + '</tr></thead><tbody>';
-      html += data.slice(0, 10).map(row => '<tr>' + row.map(c => `<td>${esc(c.trim())}</td>`).join('') + '</tr>').join('');
-      html += '</tbody></table></div>';
-      html += `<div style="margin-top:1rem;display:flex;gap:0.5rem"><button class="btn btn-primary" onclick="runAutoMatching()">🔄 自動消込実行</button><button class="btn btn-secondary" onclick="document.getElementById('ufjPreview').style.display='none'">閉じる</button></div>`;
-      document.getElementById('ufjPreview').innerHTML = html;
-      document.getElementById('ufjPreview').style.display = 'block';
-      window._ufjData = { headers: headers.map(h => h.trim()), data };
-    }
-
-    async function runAutoMatching() {
-      if (!window._ufjData || !window._ufjData.data.length) { showToast('UFJデータがありません', 'error'); return; }
-      const ufjRows = window._ufjData.data;
-      const unpaidInvoices = invoicesIssued.filter(i => i.status !== 'paid' && i.status !== 'draft');
-
-      const autoMatched = [], candidates = [], noMatch = [];
-
-      for (const row of ufjRows) {
-        // UFJ CSV typical columns: 日付, 摘要, 入金, 出金, 残高
-        const amount = parseInt((row[2]||'').replace(/[^\d]/g,'')) || 0;
-        const desc = (row[1]||'').trim();
-        if (amount <= 0) continue; // Skip outflows
-
-        // Find invoices matching by amount (tax-inclusive)
-        const amountMatches = unpaidInvoices.filter(inv => {
-          const invTotal = (inv.amount_ex_tax||0) + (inv.tax_amount||Math.floor((inv.amount_ex_tax||0)*0.1));
-          return Math.abs(invTotal - amount) < 2; // Allow ¥1 rounding diff
-        });
-
-        if (amountMatches.length === 1) {
-          // Check partial name match
-          const inv = amountMatches[0];
-          const client = clients.find(c => c.id === inv.client_id);
-          const clientName = client?.name || '';
-          const clientKana = client?.name_kana || client?.name_short || '';
-          const nameMatch = clientName && (desc.includes(clientName) || (clientKana && desc.includes(clientKana)));
-
-          if (nameMatch) {
-            autoMatched.push({ row, invoice: inv, client, confidence: '自動', amount });
-          } else {
-            candidates.push({ row, invoices: amountMatches, amount, desc });
-          }
-        } else if (amountMatches.length > 1) {
-          candidates.push({ row, invoices: amountMatches, amount, desc });
-        } else {
-          noMatch.push({ row, amount, desc, date: (row[0]||'').trim() });
-        }
-      }
-
-      // Build results HTML
-      let html = '';
-
-      if (autoMatched.length) {
-        html += `<h4 style="color:var(--green);margin-bottom:0.5rem">✅ 自動マッチ（${autoMatched.length}件）</h4>`;
-        html += '<div class="table-wrap"><table><thead><tr><th>UFJ摘要</th><th>金額</th><th>請求書</th><th>クライアント</th><th>操作</th></tr></thead><tbody>';
-        html += autoMatched.map(m => `<tr>
-          <td>${esc((m.row[1]||'').trim())}</td>
-          <td>${fmt(m.amount)}</td>
-          <td>${esc(m.invoice.invoice_number)}</td>
-          <td>${esc(m.client?.name||'')}</td>
-          <td><button class="btn btn-success btn-sm" onclick="confirmAutoMatch('${m.invoice.id}',${m.amount},'${esc((m.row[0]||'').trim())}')">消込実行</button></td>
-        </tr>`).join('');
-        html += '</tbody></table></div>';
-        html += `<button class="btn btn-primary" style="margin:0.5rem 0" onclick="confirmAllAutoMatch()">全件一括消込</button>`;
-      }
-
-      if (candidates.length) {
-        html += `<h4 style="color:var(--yellow);margin:1rem 0 0.5rem">⚠️ 候補あり（${candidates.length}件）- 手動確認</h4>`;
-        html += '<div class="table-wrap"><table><thead><tr><th>UFJ摘要</th><th>金額</th><th>候補請求書</th></tr></thead><tbody>';
-        html += candidates.map(c => `<tr>
-          <td>${esc(c.desc)}</td>
-          <td>${fmt(c.amount)}</td>
-          <td>${c.invoices.map(inv => {
-            const cl = clients.find(x => x.id === inv.client_id);
-            return `${esc(inv.invoice_number)}(${esc(cl?.name||'')})`;
-          }).join(', ')}</td>
-        </tr>`).join('');
-        html += '</tbody></table></div>';
-      }
-
-      if (noMatch.length) {
-        html += `<h4 style="color:var(--red);margin:1rem 0 0.5rem">❌ 未マッチ（${noMatch.length}件）</h4>`;
-        html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>摘要</th><th>金額</th><th>操作</th></tr></thead><tbody>';
-        html += noMatch.map(n => `<tr>
-          <td>${esc(n.date)}</td>
-          <td>${esc(n.desc)}</td>
-          <td>${fmt(n.amount)}</td>
-          <td><button class="btn btn-secondary btn-sm" onclick="manualMatchPayment('${esc(n.desc)}',${n.amount},'${esc(n.date)}')">手動消込</button></td>
-        </tr>`).join('');
-        html += '</tbody></table></div>';
-      }
-
-      if (!html) html = '<p style="color:var(--text2);padding:1rem">入金データが見つかりませんでした。</p>';
-
-      switchPaymentTab('matching', document.querySelectorAll('#paymentsSection .tab-btn')[2]);
-      document.getElementById('matchingResults').innerHTML = html;
-      window._autoMatched = autoMatched;
-      showToast(`消込分析完了: 自動${autoMatched.length}件 / 候補${candidates.length}件 / 未マッチ${noMatch.length}件`);
-    }
-
-    async function confirmAutoMatch(invoiceId, amount, date) {
-      const inv = invoicesIssued.find(i => i.id === invoiceId);
-      if (!inv) return;
-      const client = clients.find(c => c.id === inv.client_id);
-      const paymentData = {
-        invoice_id: invoiceId,
-        amount: amount,
-        received_date: date || today(),
-        payer_name: client?.name || '',
-        payment_method: 'bank_transfer',
-        notes: 'UFJ CSV自動消込',
-      };
-      const result = await sbInsert('payments_received', paymentData);
-      if (result) {
-        await sbUpdate('invoices_issued', invoiceId, { status: 'paid' });
-        showToast(`${inv.invoice_number}を消込しました`);
-        await Promise.all([loadInvoices(), loadPayments()]);
-        updateDashboard();
-      }
-    }
-
-    async function confirmAllAutoMatch() {
-      if (!window._autoMatched || !window._autoMatched.length) return;
-      if (!confirm(`${window._autoMatched.length}件を一括消込しますか？`)) return;
-      let count = 0;
-      for (const m of window._autoMatched) {
-        await confirmAutoMatch(m.invoice.id, m.amount, (m.row[0]||'').trim());
-        count++;
-      }
-      showToast(`${count}件の一括消込が完了しました`);
-    }
-
-    function manualMatchPayment(desc, amount, date) {
-      openPaymentModal();
-      document.getElementById('payAmount').value = amount;
-      document.getElementById('payDate').value = date;
-      document.getElementById('payPayer').value = desc;
-      document.getElementById('payMethod').value = 'bank_transfer';
-      document.getElementById('payNotes').value = 'UFJ CSV手動消込';
-    }
-
-    // ===== CSV IMPORT (Amex) =====
-    function handleAmexDrop(event) { event.preventDefault(); document.getElementById('amexDropZone').classList.remove('active'); handleAmexFile({ target: { files: event.dataTransfer.files } }); }
-    function handleAmexFile(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (e) => parseAmexCSV(e.target.result);
-      reader.readAsText(file, 'shift_jis');
-    }
-
-    function parseAmexCSV(content) {
-      const lines = content.split('\n').filter(l => l.trim());
-      if (lines.length < 2) { showToast('有効なCSVではありません', 'error'); return; }
-      const data = lines.slice(1).map(line => {
-        const cols = line.split(',');
-        const vendor = (cols[1] || '').trim();
-        const matchedRule = categoryRules.find(r => vendor.includes(r.pattern));
-        return { date: (cols[0]||'').trim(), vendor, amount: (cols[2]||'').trim(), category: matchedRule?.category || '' };
-      });
-
-      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">Amex明細プレビュー（${data.length}件）</h4>`;
-      html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>加盟店</th><th>金額</th><th>自動分類</th></tr></thead><tbody>';
-      html += data.map(d => `<tr><td>${esc(d.date)}</td><td>${esc(d.vendor)}</td><td>${esc(d.amount)}</td><td>${d.category ? `<span class="badge badge-green">${esc(d.category)}</span>` : '<span class="badge badge-yellow">未分類</span>'}</td></tr>`).join('');
-      html += '</tbody></table></div>';
-      html += `<div style="margin-top:1rem;display:flex;gap:0.5rem"><button class="btn btn-primary" onclick="importAmexData()">📥 経費にインポート</button><button class="btn btn-secondary" onclick="document.getElementById('amexPreview').style.display='none'">閉じる</button></div>`;
-      document.getElementById('amexPreview').innerHTML = html;
-      document.getElementById('amexPreview').style.display = 'block';
-      window._amexData = data;
-    }
-
-    async function importAmexData() {
-      if (!window._amexData) return;
-      let count = 0;
-      for (const d of window._amexData) {
-        const result = await sbInsert('expenses', {
-          date: d.date, category: d.category || 'その他',
-          vendor_name: d.vendor, amount: parseInt(d.amount.replace(/[^\d]/g, '')) || 0,
-          payment_method: 'amex', mf_exported: false,
-        });
-        if (result) count++;
-      }
-      showToast(`${count}件の経費をインポートしました`);
-      document.getElementById('amexPreview').style.display = 'none';
-      loadExpenses();
-    }
-
-    // ===== Category Master =====
-    function renderCategoryMaster() {
-      const tbody = document.getElementById('categoryMasterBody');
-      if (!categoryRules.length) { tbody.innerHTML = '<tr><td colspan="3" class="empty-state">ルール未登録</td></tr>'; return; }
-      tbody.innerHTML = categoryRules.map((r, i) => `<tr>
-        <td>${esc(r.pattern)}</td>
-        <td><span class="badge badge-purple">${esc(r.category)}</span></td>
-        <td><button class="btn-icon" onclick="removeCategoryRule(${i})">🗑️</button></td>
-      </tr>`).join('');
-    }
-
-    function addCategoryRule() {
-      const pattern = prompt('加盟店名のパターンを入力（部分一致）');
-      if (!pattern) return;
-      const category = prompt('カテゴリを入力（家賃/通信費/ソフトウェア/交通費/会議費/接待交際費/消耗品費/その他）');
-      if (!category) return;
-      categoryRules.push({ pattern, category });
-      localStorage.setItem('categoryRules', JSON.stringify(categoryRules));
-      renderCategoryMaster();
-    }
-
-    function removeCategoryRule(i) {
-      categoryRules.splice(i, 1);
-      localStorage.setItem('categoryRules', JSON.stringify(categoryRules));
-      renderCategoryMaster();
-    }
-
-    // ===== MF EXPORT =====
-    function exportMFCSV() {
-      const month = document.getElementById('exportMonth').value;
-      if (!month) { showToast('対象月を選択してください', 'error'); return; }
-      const [year, mon] = month.split('-');
-      const rows = [['日付','借方科目','借方金額','貸方科目','貸方金額','摘要']];
-
-      if (document.getElementById('exportRevenue').checked) {
-        invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(month)).forEach(i => {
-          const client = clients.find(c => c.id === i.client_id);
-          const total = (i.amount_ex_tax || 0) + (i.tax_amount || 0);
-          rows.push([i.issue_date, '売掛金', total, '売上高', total, `${client?.name || ''} ${i.invoice_number || ''}`]);
-        });
-        paymentsReceived.filter(p => (p.received_date||p.payment_date||'').startsWith(month)).forEach(p => {
-          rows.push([p.received_date || p.payment_date, '普通預金', p.amount, '売掛金', p.amount, `入金 ${p.payer_name || ''}`]);
-        });
-      }
-
-      if (document.getElementById('exportExpenses').checked) {
-        const catMap = { '家賃': '地代家賃', '通信費': '通信費', 'ソフトウェア': '消耗品費', '交通費': '旅費交通費', '会議費': '会議費', '接待交際費': '接待交際費', '消耗品費': '消耗品費', 'その他': '雑費' };
-        expenses.filter(e => e.date && e.date.startsWith(month)).forEach(e => {
-          rows.push([e.date, catMap[e.category] || '雑費', e.amount, e.payment_method === 'amex' ? '未払金' : '普通預金', e.amount, `${e.vendor_name || ''} ${e.category}`]);
-        });
-      }
-
-      const csv = rows.map(r => r.join(',')).join('\n');
-      const bom = '\ufeff';
-      const blob = new Blob([bom + csv], { type: 'text/csv;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url; a.download = `MF_${month}.csv`; a.click();
-      URL.revokeObjectURL(url);
-      showToast(`${month}のMoneyForward CSVをエクスポートしました`);
-    }
-
-    function previewMFCSV() {
-      const month = document.getElementById('exportMonth').value;
-      if (!month) { showToast('対象月を選択してください', 'error'); return; }
-      const rows = [];
-      const catMap = { '家賃': '地代家賃', '通信費': '通信費', 'ソフトウェア': '消耗品費', '交通費': '旅費交通費', '会議費': '会議費', '接待交際費': '接待交際費', '消耗品費': '消耗品費', 'その他': '雑費' };
-
-      if (document.getElementById('exportRevenue').checked) {
-        invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(month)).forEach(i => {
-          const client = clients.find(c => c.id === i.client_id);
-          const total = (i.amount_ex_tax||0) + (i.tax_amount||0);
-          rows.push({ date: i.issue_date, debit: '売掛金', dAmt: total, credit: '売上高', cAmt: total, summary: `${client?.name||''} ${i.invoice_number||''}` });
-        });
-        paymentsReceived.filter(p => (p.received_date||p.payment_date||'').startsWith(month)).forEach(p => {
-          rows.push({ date: p.received_date||p.payment_date, debit: '普通預金', dAmt: p.amount, credit: '売掛金', cAmt: p.amount, summary: `入金 ${p.payer_name||''}` });
-        });
-      }
-      if (document.getElementById('exportExpenses').checked) {
-        expenses.filter(e => e.date && e.date.startsWith(month)).forEach(e => {
-          rows.push({ date: e.date, debit: catMap[e.category]||'雑費', dAmt: e.amount, credit: e.payment_method === 'amex' ? '未払金' : '普通預金', cAmt: e.amount, summary: `${e.vendor_name||''} ${e.category}` });
-        });
-      }
-
-      if (!rows.length) {
-        document.getElementById('mfPreview').innerHTML = '<p style="color:var(--text2);padding:1rem">対象データがありません</p>';
-        document.getElementById('mfPreview').style.display = 'block';
-        return;
-      }
-
-      let html = `<h4 style="color:var(--text);margin-bottom:0.5rem">MoneyForward仕訳プレビュー（${rows.length}件）</h4>`;
-      html += '<div class="table-wrap"><table><thead><tr><th>日付</th><th>借方科目</th><th>借方金額</th><th>貸方科目</th><th>貸方金額</th><th>摘要</th></tr></thead><tbody>';
-      html += rows.map(r => `<tr><td>${esc(r.date)}</td><td>${esc(r.debit)}</td><td>${fmt(r.dAmt)}</td><td>${esc(r.credit)}</td><td>${fmt(r.cAmt)}</td><td>${esc(r.summary)}</td></tr>`).join('');
-      html += '</tbody></table></div>';
-      document.getElementById('mfPreview').innerHTML = html;
-      document.getElementById('mfPreview').style.display = 'block';
-    }
-
-    // ===== TAB SWITCHING =====
-    function switchPaymentTab(tab, btn) {
-      document.querySelectorAll('#paymentsSection .tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#paymentsSection .tab-content').forEach(c => c.classList.remove('active'));
-      (btn || event.target).classList.add('active');
-      document.getElementById(`payments-${tab}`).classList.add('active');
-    }
-
-    function switchExpenseTab(tab, btn) {
-      document.querySelectorAll('#expensesSection .tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('#expensesSection .tab-content').forEach(c => c.classList.remove('active'));
-      (btn || event.target).classList.add('active');
-      document.getElementById(`expenses-${tab}`).classList.add('active');
-    }
-
-    // ===== DROPDOWN UPDATES =====
-    function updateClientDropdowns() {
-      const opts = '<option value="">選択...</option>' + clients.map(c => `<option value="${c.id}">${esc(c.name)}</option>`).join('');
-      ['jobClient','estClient','invClient'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
-    }
-
-    function updateJobDropdowns() {
-      const jobOpts = '<option value="">選択...</option>' + jobs.map(j => `<option value="${j.id}">${esc(j.job_code||j.job_number)} - ${esc(j.title)}</option>`).join('');
-      ['invJob','expJob','jobEstimate'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el && id !== 'jobEstimate') el.innerHTML = jobOpts;
-      });
-      // Estimate dropdown for job modal
-      const estOpts = '<option value="">なし</option>' + estimates.map(e => `<option value="${e.id}">${esc(e.estimate_number)} - ${esc(e.title)}</option>`).join('');
-      const estEl = document.getElementById('jobEstimate');
-      if (estEl) estEl.innerHTML = estOpts;
-    }
-
-    function updateStaffDropdown() {
-      const opts = '<option value="">選択...</option>' + staffMembers.map(s => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
-      ['jobStaff','estStaff'].forEach(id => { const el = document.getElementById(id); if (el) el.innerHTML = opts; });
-    }
-
-    function updatePaymentInvoiceDropdown() {
-      const opts = '<option value="">選択...</option>' + invoicesIssued.filter(i => i.status !== 'paid').map(i => {
-        const client = clients.find(c => c.id === i.client_id);
-        const total = (i.amount_ex_tax||0) + (i.tax_amount||0);
-        return `<option value="${i.id}">${esc(i.invoice_number)} - ${esc(client?.name||'')} ${fmt(total)}</option>`;
-      }).join('');
-      document.getElementById('payInvoice').innerHTML = opts;
-    }
-
-    // ===== ALERTS =====
-    function updateAlerts() {
-      const overdue = invoicesIssued.filter(i => i.status === 'overdue');
-      const soon = invoicesIssued.filter(i => {
-        if (i.status === 'paid' || i.status === 'draft' || i.status === 'overdue') return false;
-        const due = new Date(i.due_date);
-        const diff = (due - new Date()) / (1000*60*60*24);
-        return diff >= 0 && diff <= 7;
-      });
-
-      if (overdue.length > 0) {
-        document.getElementById('alertBanner').classList.add('show');
-        document.getElementById('alertBadgeCount').textContent = `${overdue.length}件`;
-        document.getElementById('alertText').textContent = `期限超過の請求書が${overdue.length}件あります！${soon.length > 0 ? ` また${soon.length}件が7日以内に期限到来` : ''}`;
-        document.getElementById('alertNav').style.display = 'inline-block';
-        document.getElementById('alertNavCount').textContent = overdue.length;
-        document.getElementById('kpiOverdueCard').style.display = 'block';
-        document.getElementById('kpiOverdue').textContent = overdue.length + '件';
-      } else {
-        document.getElementById('alertBanner').classList.remove('show');
-        document.getElementById('alertNav').style.display = 'none';
-        document.getElementById('kpiOverdueCard').style.display = 'none';
-      }
-    }
-
-    // ===== DASHBOARD KPIs =====
-    function updateDashboard() {
-      const now = new Date();
-      const monthStart = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-      // Revenue
-      const monthRevenue = invoicesIssued.filter(i => i.issue_date && i.issue_date.startsWith(monthStart))
-        .reduce((s, i) => s + (i.amount_ex_tax||0) + (i.tax_amount||0), 0);
-      document.getElementById('kpiRevenue').textContent = fmt(monthRevenue);
-      document.getElementById('plRevenue').textContent = fmt(monthRevenue);
-
-      // Cost (from jobs cost_budget as proxy)
-      const monthCost = jobs.filter(j => j.status === 'active').reduce((s, j) => s + (j.cost_budget||0), 0);
-      document.getElementById('kpiCost').textContent = fmt(monthCost);
-      document.getElementById('plCostPart').textContent = fmt(monthCost);
-
-      // Expenses
-      const monthExpense = expenses.filter(e => e.date && e.date.startsWith(monthStart)).reduce((s, e) => s + (e.amount||0), 0);
-      document.getElementById('kpiExpense').textContent = fmt(monthExpense);
-      document.getElementById('plExpensePart').textContent = fmt(monthExpense);
-
-      // Profit
-      const totalExpenseOut = monthCost + monthExpense;
-      const profit = monthRevenue - totalExpenseOut;
-      const profitRate = monthRevenue > 0 ? Math.round((profit / monthRevenue) * 100) : 0;
-      document.getElementById('kpiProfit').textContent = fmt(profit);
-      document.getElementById('kpiProfitRate').textContent = `粗利率 ${profitRate}%`;
-      document.getElementById('plExpenseTotal').textContent = fmt(totalExpenseOut);
-      document.getElementById('plNetProfit').textContent = fmt(profit);
-      document.getElementById('plNetRate').textContent = `${profitRate}%`;
-      document.getElementById('plNetProfit').style.color = profit >= 0 ? 'var(--green)' : 'var(--red)';
-
-      // P&L bars
-      const maxVal = Math.max(monthRevenue, totalExpenseOut, 1);
-      document.getElementById('plRevenueBar').style.width = `${(monthRevenue/maxVal)*100}%`;
-      document.getElementById('plExpenseBar').style.width = `${(totalExpenseOut/maxVal)*100}%`;
-      document.getElementById('plNetBar').style.width = `${Math.max(0,(profit/maxVal)*100)}%`;
-
-      // Unpaid
-      const unpaid = invoicesIssued.filter(i => i.status !== 'paid' && i.status !== 'draft');
-      const unpaidTotal = unpaid.reduce((s, i) => s + (i.amount_ex_tax||0) + (i.tax_amount||0), 0);
-      document.getElementById('kpiUnpaid').textContent = fmt(unpaidTotal);
-      document.getElementById('kpiUnpaidCount').textContent = `${unpaid.length}件`;
-
-      // Jobs
-      const activeJobs = jobs.filter(j => j.status === 'active').length;
-      document.getElementById('kpiActiveJobs').textContent = activeJobs;
-      document.getElementById('kpiTotalJobs').textContent = `全${jobs.length}件`;
-
-      // Clients
-      document.getElementById('kpiClientCount').textContent = clients.length;
-
-      // Export month default
-      document.getElementById('exportMonth').value = monthStart;
-    }
-
-    // ===== SEARCH LISTENERS =====
-    function setupSearchListeners() {
-      document.getElementById('jobsSearch').addEventListener('input', renderJobs);
-      document.getElementById('clientsSearch').addEventListener('input', renderClients);
-      document.getElementById('estimatesSearch').addEventListener('input', renderEstimates);
-      document.getElementById('invoicesSearch').addEventListener('input', renderInvoices);
-      document.getElementById('paymentsSearch').addEventListener('input', renderPayments);
-      document.getElementById('expensesSearch').addEventListener('input', renderExpenses);
-    }
-
-    // ===== INITIALIZATION =====
-    async function initialize() {
-      staffMembers = await sbFetch('staff_members', { order: 'created_at.desc' });
-      updateStaffDropdown();
-
-      await Promise.all([loadClients(), loadJobs(), loadEstimates(), loadInvoices(), loadPayments(), loadExpenses()]);
-
-      updateJobDropdowns();
-      updateDashboard();
-      updateAlerts();
-      setupSearchListeners();
-      renderCategoryMaster();
-    }
-
-    window.addEventListener('DOMContentLoaded', initialize);
-  </script>
-</body>
+    fun
+     oup atCpo   cy(amou())        .projecreturn '¥' + Math.floor(amou() || 0�.toLocaleSerx;
+0'ja-JP')   }
+
+        ::-webkfun
+     oup atDl()�dms-Ser)        .projecif (!dms-Ser) return '─';      <h33333vaost dms- = new Dl()�dms-Ser);      <h33333return dms-g
+oLocaleDms-Serx;
+0'ja-JP', {3yea : 'iumeric', m{
+ h: '2-digi ', day: '2-digi '3}).relder=(/\//g, '/')   }
+
+        ::-webkdocuble".querySd="phor ll('.tab  {
+   ')ow {Each(class="=>        .projecclass=.addEve></diven  �'earck', () =>        .projecor: vaost 
+puName = class=.getAterxcla-('shflinpu');      <h33333    docuble".querySd="phor ll('.tab  {
+   ')ow {Each(c => bgbtn b/div.remove�' data-'));      <h33333    docuble".querySd="phor ll('.tab  {
+    ')ow {Each(" => tgbtn b/div.remove�' data-'));      <h33333    class=.btn b/div.add(' data-');  }
+
+    3333    docuble".getEleble"ById�
+puName gbtn b/div.add(' data-');  }
+
+         )   }
+
+     );   ::-webkdocuble".querySd="phor ll('.cash-flowinpu')ow {Each(class="=>        .projecclass=.addEve></diven  �'earck', () =>        .projecor: vaost 
+puName = class=.getAterxcla-('shflicashflowinpu');      <h33333    docuble".querySd="phor ll('.cash-flowinpu')ow {Each(c => bgbtn b/div.remove�' data-'));      <h33333    docuble".querySd="phor ll('.cashflowise
+    ')ow {Each(" => tgbtn b/div.add('hidden'));      <h33333    class=.btn b/div.add(' data-');  }
+
+    3333    vaost rp
+     = docuble".getEleble"ById�`${   Name}ise
+    `);      <h333333333if (r>
+    )gr>
+    gbtn b/div.remove�'hidden');  }
+
+         )   }
+
+     );   ::-webkdocuble".getEleble"ById�'yea Sd="phor')oaddEve></diven  �'eh    ', (e) =>        .projec po    Ye   = sTrseI()�-g
+argetg">す);  }
+
+        a">
+ llDhfl();      <h3 );   ::-webkdocuble".getEleble"ById�'est">< place')gaddEve></diven  �'ype="', updms-Cst"></div);      <h3docuble".getEleble"ById�'Search" place')gaddEve></diven  �'ype="', updms-Pable">
+    );      <h3docuble".getEleble"ById�'Ster">
+    ')gaddEve></diven  �'eh    ', updms-Pable">
+    );       <h3docuble".getEleble"ById�'STable"Upa">
+ rea')gaddEve></diven  �'earck', () =>        .projecdocuble".getEleble"ById�'STable">
+ eI(e="' gbtrck();      <h3 );      <h3docuble".getEleble"ById�'STable"Upa">
+ rea')gaddEve></diven  �'drag    ', (e) =>        .projece.p-subttDefaulv();      <h33333docuble".getEleble"ById�'STable"Upa">
+ rea')gbtn b/div.add(' data-');  }
+
+     );      <h3docuble".getEleble"ById�'STable"Upa">
+ rea')gaddEve></diven  �'dragleave', () =>        .projecdocuble".getEleble"ById�'STable"Upa">
+ rea')gbtn b/div.remove�' data-');      pad );      <h3docuble".getEleble"ById�'STable"Upa">
+ rea')gaddEve></diven  �'drop', (e) =>        .projece.p-subttDefaulv();      <h33333docuble".getEleble"ById�'STable"Upa">
+ rea')gbtn b/div.remove�' data-');      paddingvaost ">
+ex = e.shflTransfer.">
+ex;      <h33333if (">
+ex.length > 0) h  dl-PTable"Upa">
+(">
+ex[0]);      pad );      <h3docuble".getEleble"ById�'STable">
+ eI(e="' gaddEve></diven  �'eh    ', (e) =>        .projecif (eg
+argetg">
+ex.length > 0) h  dl-PTable"Upa">
+(eg
+argetg">
+ex[0]);      pad );       <h3docuble".getEleble"ById�'e-subteUpa">
+ rea')gaddEve></diven  �'earck', () =>        .projecdocuble".getEleble"ById�'e-subte>
+ eI(e="' gbtrck();      <h3 );      <h3docuble".getEleble"ById�'e-subteUpa">
+ rea')gaddEve></diven  �'drag    ', (e) =>        .projece.p-subttDefaulv();      <h33333docuble".getEleble"ById�'e-subteUpa">
+ rea')gbtn b/div.add(' data-');  }
+
+     );      <h3docuble".getEleble"ById�'e-subteUpa">
+ rea')gaddEve></diven  �'dragleave', () =>        .projecdocuble".getEleble"ById�'e-subteUpa">
+ rea')gbtn b/div.remove�' data-');      pad );      <h3docuble".getEleble"ById�'e-subteUpa">
+ rea')gaddEve></diven  �'drop', (e) =>        .projece.p-subttDefaulv();      <h33333docuble".getEleble"ById�'e-subteUpa">
+ rea')gbtn b/div.remove�' data-');      padddddvaost ">
+ex = e.shflTransfer.">
+ex;      <h33333if (">
+ex.length > 0) h  dl-E-subteUpa">
+(">
+ex[0]);      pad );      <h3docuble".getEleble"ById�'e-subte>
+ eI(e="' gaddEve></diven  �'eh    ', (e) =>        .projecif (eg
+argetg">
+ex.length > 0) h  dl-E-subteUpa">
+(eg
+argetg">
+ex[0]);      pad );       <h3fun
+     h  dl-PTable"Upa">
+(">
+e         .projecvaost r
+     = new >
+ eR
+    ();      <h33333r
+    .ona">
+ = async (e) =>        .projecojecvaost csv = e.
+argetgresulv;  }
+
+    3333    vaost linex = csv.splin('\n');  }
+
+         <h3for (det - = 1; - < linex.length  i++)3       .projecor:     if (!linex[i].erx
+())3vr">in��;      <h33333aaaa    vaost ="7" = linex[i].splin(','            opaaaaaaaaaif (="7".length < 2)3vr">in��;      <h33333aaaa    vaost STable"Dl() = ="7"[0]gerx
+();      <h33333aaaa    vaost amou() = sTrseI()�="7"[1].erx
+())3|| 0;      <h33333aaaa    vaost notei = ="7"[2] ?  "7"[2].erx
+()   '';      <h33333aaaa     r         paddingor: aaaaaaaaawait sbIbtert('sTable">_received', {      paddingor: aaaaaaaa    varch"_id: null,      backgro33333333aaaaaaaaamou(): amou(),      backgro3333333333333333sTable"_dms-: STable"Dl(),      backgro3333333333333333sTable"_method: 'bank',      backgro3333333333333333mslched_red {
+: 'unmslched',      backgro3333333333333333ioteir;iotei      backgro333333333333}            opaaaaa3333} nslch (err         .projecor: or:     vaosole{
+    ('Ibtert 
+    :', err ;      <h3333333333333}      <h33333           <h333333333showTrnin('�ータがあも���</b�プロ��ぃ���択���択�', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333 ;      <h33333r
+    .r
+  AsT��(">
+e    }
+
+        ::-webkfun
+     h  dl-E-subteUpa">
+(">
+e         .projecvaost r
+     = new >
+ eR
+    ();      <h33333r
+    .ona">
+ = async (e) =>        .projecojecvaost csv = e.
+argetgresulv;  }
+
+    3333    vaost linex = csv.splin('\n');  }
+
+         <h3for (det - = 1; - < linex.length  i++)3       .projecor:     if (!linex[i].erx
+())3vr">in��;      <h33333aaaa    vaost ="7" = linex[i].splin(','            opaaaaaaaaaif (="7".length < 2)3vr">in��;      <h33333aaaa    vaost e-subteDl() = ="7"[0]gerx
+();      <h33333aaaa    vaost vendor = ="7"[1]gerx
+();      <h33333aaaa    vaost cms-gory = ="7"[2] ?  "7"[2].erx
+()   '外注費';      <h33333aaaa    vaost amou() = sTrseI()�="7"[3].erx
+())3|| 0;      <h33333aaaa    vaost descrip     = ="7"[4] ?  "7"[4].erx
+()   '';      <h33333aaaa     r         paddingor: aaaaaaaaawait sbIbtert('e-subtex', {      backgro3333333333333333e-subte_dms-: e-subteDl(),      backgro3333333333333333vendor_iewp:3vendor,      backgro3333333333333333cms-gory:3cms-gory,      backgro33333333aaaaaaaaamou(): amou(),      backgro3333333333333333tax_amou(): 0,      backgro3333333333333333descrip      descrip    ,      backgro33333333aaaaaaaaamex_ref: `AMEX-${Dl().now()}`      backgro333333333333}            opaaaaa3333} nslch (err         .projecor: or:     vaosole{
+    ('Ibtert 
+    :', err ;      <h3333333333333}      <h33333           <h333333333showTrnin('��理<��があも���</b�プロ��ぃ���択���択�', '" oncli'            opaaaaaawait a">
+ llDhfl();      <h33333 ;      <h33333r
+    .r
+  AsT��(">
+e    }
+
+        ::-webka">
+ llDhfl();     </scrip >
+</    >
 </html>
